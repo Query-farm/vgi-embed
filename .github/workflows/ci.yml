@@ -162,4 +162,4 @@ jobs:
         run: uv run --no-sync mypy vgi_embed
 
       - name: Docstring lint (pydoclint)
-        run: uv run --no-sync pydoclint vgi_embed
+        run: uvx pydoclint --config pyproject.toml vgi_embed
