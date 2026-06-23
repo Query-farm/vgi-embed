@@ -4,7 +4,9 @@
 
 <p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
 
-# vgi-embed
+# Local Text Embeddings for RAG in DuckDB
+
+> **vgi-embed** · a [Query.Farm](https://query.farm) VGI worker · powered by fastembed (ONNX)
 
 Local **text embeddings** as DuckDB SQL functions — for semantic search and
 retrieval-augmented generation (RAG) with [DuckDB VSS](https://duckdb.org/docs/extensions/vss).
