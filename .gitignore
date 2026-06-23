@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.claude/
+vendor/
+duckdb_unittest_tempdir/
+models/
+*.coverage
+.coverage
+# fastembed downloads/caches ONNX models on first use -- never commit them.
+.fastembed_cache/
+fastembed_cache/
+.cache/
+uv.lock

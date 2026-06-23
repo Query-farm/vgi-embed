@@ -1,0 +1,114 @@
+# name: test/sql/scalars.test
+# group: [vgi_embed]
+#
+# End-to-end coverage of the embedding + similarity scalars through a real
+# ATTACH + worker subprocess. Run with haybarn-unittest, so we LOAD vgi
+# explicitly (require vgi would SKIP under haybarn). Embeddings are deterministic
+# per model, but exact float values vary by ONNX build -- so we assert the vector
+# LENGTH exactly, self-similarity ~ 1.0, and a planted related > unrelated
+# comparison; never exact floats.
+
+require-env VGI_EMBED_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION '${VGI_EMBED_WORKER}');
+
+# ---- embed(text): fixed-length FLOAT[] vector -------------------------------
+
+query I
+SELECT len(embed.embed('hello world')) = 384;
+----
+true
+
+# Default model and explicit model agree on length.
+query I
+SELECT len(embed.embed('hello world', 'BAAI/bge-small-en-v1.5')) = 384;
+----
+true
+
+# NULL / empty input yields a NULL vector.
+query I
+SELECT embed.embed(NULL) IS NULL;
+----
+true
+
+query I
+SELECT embed.embed('') IS NULL;
+----
+true
+
+# ---- similarity: self-similarity is exactly ~1.0 ----------------------------
+
+query I
+SELECT ROUND(embed.similarity(embed.embed('cat'), embed.embed('cat')), 3) = 1.0;
+----
+true
+
+# A related pair scores higher than an unrelated pair (planted: dog/puppy vs dog/airplane).
+query I
+SELECT embed.similarity(embed.embed('dog'), embed.embed('puppy'))
+     > embed.similarity(embed.embed('dog'), embed.embed('airplane'));
+----
+true
+
+# similarity on NULL / mismatched inputs is NULL (never crashes).
+query I
+SELECT embed.similarity(NULL, embed.embed('cat')) IS NULL;
+----
+true
+
+# ---- embed over a VALUES table ---------------------------------------------
+
+statement ok
+CREATE TEMP TABLE docs AS
+  SELECT * FROM (VALUES
+    (1, 'the cat sat on the mat'),
+    (2, 'a dog played in the park'),
+    (3, NULL)
+  ) AS t(id, body);
+
+# Every non-null row embeds to a 384-length vector; the NULL row stays NULL.
+query II
+SELECT id, COALESCE(len(embed.embed(body)), -1) FROM docs ORDER BY id;
+----
+1	384
+2	384
+3	-1
+
+# ---- query / passage retrieval asymmetry ------------------------------------
+
+query I
+SELECT len(embed.embed_query('how do I reset my password')) = 384;
+----
+true
+
+query I
+SELECT len(embed.embed_passage('Click forgot password to reset it.')) = 384;
+----
+true
+
+# The query gets the bge instruction prefix; the passage does not -- so the two
+# vectors for the same text differ.
+query I
+SELECT embed.similarity(embed.embed_query('reset password'),
+                        embed.embed_passage('reset password')) < 1.0;
+----
+true
+
+# ---- embedding_dim / embed_version -----------------------------------------
+
+query I
+SELECT embed.embedding_dim('BAAI/bge-small-en-v1.5');
+----
+384
+
+query I
+SELECT embed.embed_version() LIKE 'vgi-embed%';
+----
+true
+
+statement ok
+DETACH embed;

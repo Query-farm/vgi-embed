@@ -1,0 +1,41 @@
+# name: test/sql/tables.test
+# group: [vgi_embed]
+#
+# Discovery table function supported_models() via ATTACH + SELECT. The catalog of
+# supported models is static (no model is loaded), so these are exact assertions.
+
+require-env VGI_EMBED_WORKER
+
+statement ok
+LOAD vgi;
+
+statement ok
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION '${VGI_EMBED_WORKER}');
+
+# ---- supported_models() rows ------------------------------------------------
+
+query I
+SELECT count(*) >= 1 FROM embed.supported_models();
+----
+true
+
+# The default model is listed with its 384 dimension.
+query I
+SELECT dim FROM embed.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5';
+----
+384
+
+# embedding_dim() agrees with the table for every listed model.
+query I
+SELECT bool_and(embed.embedding_dim(model) = dim) FROM embed.supported_models();
+----
+true
+
+# Output schema is exactly (model, dim).
+query I
+SELECT count(*) FROM (DESCRIBE SELECT * FROM embed.supported_models());
+----
+2
+
+statement ok
+DETACH embed;
