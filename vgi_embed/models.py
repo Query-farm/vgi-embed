@@ -39,6 +39,7 @@ library traceback.
 from __future__ import annotations
 
 import contextlib
+import math
 import os
 import threading
 from functools import cache
@@ -194,7 +195,7 @@ def cosine_similarity(a: list[float] | None, b: list[float] | None) -> float | N
         nb += y * y
     if na == 0.0 or nb == 0.0:
         return None
-    return dot / ((na**0.5) * (nb**0.5))
+    return dot / (math.sqrt(na) * math.sqrt(nb))
 
 
 # ---------------------------------------------------------------------------

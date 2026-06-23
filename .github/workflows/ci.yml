@@ -149,11 +149,17 @@ jobs:
       - name: Install tooling
         run: |
           uv venv
-          uv pip install vgi-python "fastembed>=0.3" pyarrow ruff mypy
+          uv pip install vgi-python "fastembed>=0.3" pyarrow ruff mypy pydoclint
           uv pip install -e . --no-deps
+
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check .
 
       - name: Check linting
         run: uv run --no-sync ruff check .
 
       - name: Type check (mypy)
         run: uv run --no-sync mypy vgi_embed
+
+      - name: Docstring lint (pydoclint)
+        run: uv run --no-sync pydoclint vgi_embed

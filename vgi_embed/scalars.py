@@ -20,7 +20,7 @@ of table functions and macros, not scalars. So ``embed`` exposes its optional
     SELECT embed.embed(body)                          FROM docs;  -- default model
     SELECT embed.embed(body, 'BAAI/bge-base-en-v1.5') FROM docs;  -- pick a model
 
-Returns
+Returns:
 -------
 The embedding functions return ``FLOAT[]`` (``LIST(FLOAT)``), so they declare an
 explicit ``Returns(arrow_type=pa.list_(pa.float32()))``. ``similarity`` returns
@@ -89,6 +89,8 @@ class Embed(ScalarFunction):
     """``embed(text)`` -- sentence embedding with the default model (no prefix)."""
 
     class Meta:
+        """Declarative metadata for the ``embed(text)`` scalar."""
+
         name = "embed"
         description = (
             "Embed text into a fixed-length FLOAT[] vector using the default model "
@@ -105,6 +107,7 @@ class Embed(ScalarFunction):
         cls,
         text: Annotated[pa.StringArray, Param(doc="Text column to embed")],
     ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed ``text`` with the default model."""
         return _embed_array(text, model=None)
 
 
@@ -112,6 +115,8 @@ class EmbedModel(ScalarFunction):
     """``embed(text, model)`` -- sentence embedding with an explicit model."""
 
     class Meta:
+        """Declarative metadata for the ``embed(text, model)`` scalar."""
+
         name = "embed"
         description = (
             "Embed text into a FLOAT[] vector with an explicit model (see supported_models()). NULL/empty -> NULL."
@@ -128,6 +133,7 @@ class EmbedModel(ScalarFunction):
         text: Annotated[pa.StringArray, Param(doc="Text column to embed")],
         model: Annotated[str, ConstParam(doc="Model name; see supported_models()")],
     ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed ``text`` with the explicit ``model``."""
         return _embed_array(text, model=model or None)
 
 
@@ -140,6 +146,8 @@ class EmbedQuery(ScalarFunction):
     """``embed_query(text)`` -- embed a *search query* (applies the model's instruction prefix)."""
 
     class Meta:
+        """Declarative metadata for the ``embed_query(text)`` scalar."""
+
         name = "embed_query"
         description = (
             "Embed a search query with the default model, applying the model's "
@@ -157,6 +165,7 @@ class EmbedQuery(ScalarFunction):
         cls,
         text: Annotated[pa.StringArray, Param(doc="Search query to embed")],
     ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed a search query, applying the model's instruction prefix."""
         return _embed_array(text, model=None, prefix=models.query_prefix(None))
 
 
@@ -164,6 +173,8 @@ class EmbedPassage(ScalarFunction):
     """``embed_passage(text)`` -- embed a *document/passage* (no prefix, by design)."""
 
     class Meta:
+        """Declarative metadata for the ``embed_passage(text)`` scalar."""
+
         name = "embed_passage"
         description = (
             "Embed a document/passage with the default model. For bge retrieval "
@@ -181,6 +192,7 @@ class EmbedPassage(ScalarFunction):
         cls,
         text: Annotated[pa.StringArray, Param(doc="Passage/document text to embed")],
     ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed a passage/document with no query prefix."""
         return _embed_array(text, model=None)
 
 
@@ -193,6 +205,8 @@ class Similarity(ScalarFunction):
     """``similarity(a, b)`` -- cosine similarity of two FLOAT[] vectors, in [-1, 1]."""
 
     class Meta:
+        """Declarative metadata for the ``similarity(a, b)`` scalar."""
+
         name = "similarity"
         description = (
             "Cosine similarity of two FLOAT[] vectors, in [-1, 1] (pure arithmetic, "
@@ -210,6 +224,7 @@ class Similarity(ScalarFunction):
         a: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="First FLOAT[] vector")],
         b: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="Second FLOAT[] vector")],
     ) -> Annotated[pa.DoubleArray, Returns(arrow_type=pa.float64())]:
+        """Cosine similarity of each ``(a, b)`` vector pair."""
         out = [models.cosine_similarity(x, y) for x, y in zip(a.to_pylist(), b.to_pylist(), strict=False)]
         return pa.array(out, type=pa.float64())
 
@@ -223,6 +238,8 @@ class EmbeddingDim(ScalarFunction):
     """``embedding_dim(model)`` -- the output dimension for a model name."""
 
     class Meta:
+        """Declarative metadata for the ``embedding_dim(model)`` scalar."""
+
         name = "embedding_dim"
         description = "Output dimension (vector length) for a model name; '' = default model"
         categories = ["embedding", "metadata"]
@@ -236,6 +253,7 @@ class EmbeddingDim(ScalarFunction):
         cls,
         model: Annotated[pa.StringArray, Param(doc="Model name; '' or NULL = default model")],
     ) -> Annotated[pa.Int32Array, Returns(arrow_type=pa.int32())]:
+        """Output dimension per model name (unknown -> NULL)."""
         out: list[int | None] = []
         for m in model.to_pylist():
             try:
@@ -250,6 +268,8 @@ class EmbedVersion(ScalarFunction):
     """``embed_version()`` -- worker + default-model identity string."""
 
     class Meta:
+        """Declarative metadata for the ``embed_version()`` scalar."""
+
         name = "embed_version"
         description = "Version string: worker version, fastembed backend, and default model"
         categories = ["metadata"]
@@ -262,6 +282,7 @@ class EmbedVersion(ScalarFunction):
     def compute(
         cls,
     ) -> Annotated[pa.StringArray, Returns(arrow_type=pa.string())]:
+        """Return the worker/default-model identity string."""
         return pa.array([_version_string()], type=pa.string())
 
 

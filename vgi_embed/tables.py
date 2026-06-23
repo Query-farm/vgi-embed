@@ -56,6 +56,8 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
     FIXED_SCHEMA: ClassVar[pa.Schema] = _SUPPORTED_MODELS_SCHEMA
 
     class Meta:
+        """Declarative metadata for the ``supported_models()`` table function."""
+
         name = "supported_models"
         description = "Every (model, dim) the embed worker supports"
         categories = ["embedding", "metadata"]
@@ -72,11 +74,13 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
 
     @classmethod
     def cardinality(cls, params: BindParams[_NoArgs]) -> TableCardinality:
+        """Exact row count: one per supported model."""
         n = len(models.supported_models())
         return TableCardinality(estimate=n, max=n)
 
     @classmethod
     def process(cls, params: ProcessParams[_NoArgs], state: None, out: OutputCollector) -> None:
+        """Emit one ``(model, dim)`` row per supported model, then finish."""
         rows = models.supported_models()
         out.emit(
             pa.RecordBatch.from_pydict(

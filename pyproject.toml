@@ -38,6 +38,7 @@ dev = [
     "pytest>=8",
     "ruff>=0.5",
     "mypy>=1.10",
+    "pydoclint",
 ]
 
 [project.urls]
@@ -59,13 +60,35 @@ line-length = 120
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "I", "UP", "B", "SIM", "D"]
 
 [tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
 # The PEP 723 inline-script headers wrap dependency pins that should stay one-per-line.
 "embed_worker.py" = ["E501"]
 "serve.py" = ["E501"]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pydoclint]
+style = "google"
+arg_type_hints_in_docstring = false
+check_return_types = false
+check_yield_types = false
+check_class_attributes = true
+skip_checking_raises = true
+allow_init_docstring = true
+
 [tool.mypy]
 python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["fastembed.*", "onnxruntime.*"]
 ignore_missing_imports = true
