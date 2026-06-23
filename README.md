@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/vgi-logo.png" alt="Vector Gateway Interface (VGI)" width="320">
+</p>
+
+<p align="center"><em>A <a href="https://query.farm">Query.Farm</a> VGI worker for DuckDB.</em></p>
+
 # vgi-embed
 
 Local **text embeddings** as DuckDB SQL functions — for semantic search and
@@ -130,3 +136,12 @@ and runs `haybarn-unittest --test-dir . "test/sql/*"` (install once:
 Worker code: **MIT** (see [LICENSE](LICENSE)). The default model
 `BAAI/bge-small-en-v1.5` is MIT-licensed; `fastembed` is Apache-2.0. The `vgi`
 DuckDB extension and `vgi-python` are licensed separately by Query Farm.
+
+---
+
+## Authorship & License
+
+Written by [Query.Farm](https://query.farm) — every VGI worker is designed and built by Query.Farm.
+
+Copyright 2026 Query Farm LLC - https://query.farm
+
