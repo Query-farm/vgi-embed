@@ -58,8 +58,9 @@ class TestWarmUp:
 class TestSimilarity:
     def test_identical_vectors_score_one(self) -> None:
         v = [1.0, 2.0, 3.0]
-        out = Similarity.compute(pa.array([v], type=pa.list_(pa.float32())),
-                                 pa.array([v], type=pa.list_(pa.float32()))).to_pylist()
+        out = Similarity.compute(
+            pa.array([v], type=pa.list_(pa.float32())), pa.array([v], type=pa.list_(pa.float32()))
+        ).to_pylist()
         assert math.isclose(out[0], 1.0, abs_tol=1e-6)
 
     def test_orthogonal_vectors_score_zero(self) -> None:
@@ -176,10 +177,12 @@ class TestEmbedQueryPassage:
     def test_query_matches_relevant_passage_best(self) -> None:
         query = EmbedQuery.compute(pa.array(["how do I reset my password"]))
         passages = EmbedPassage.compute(
-            pa.array([
-                "To reset your password, click the 'forgot password' link.",
-                "Our office is open from nine to five on weekdays.",
-            ])
+            pa.array(
+                [
+                    "To reset your password, click the 'forgot password' link.",
+                    "Our office is open from nine to five on weekdays.",
+                ]
+            )
         )
         lt = pa.list_(pa.float32())
         relevant = Similarity.compute(query, pa.array([passages[0]], type=lt)).to_pylist()[0]

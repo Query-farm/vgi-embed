@@ -14,4 +14,3 @@ models/
 .fastembed_cache/
 fastembed_cache/
 .cache/
-uv.lock

@@ -114,8 +114,7 @@ class EmbedModel(ScalarFunction):
     class Meta:
         name = "embed"
         description = (
-            "Embed text into a FLOAT[] vector with an explicit model "
-            "(see supported_models()). NULL/empty -> NULL."
+            "Embed text into a FLOAT[] vector with an explicit model (see supported_models()). NULL/empty -> NULL."
         )
         categories = ["embedding"]
         examples = _ex(
@@ -211,10 +210,7 @@ class Similarity(ScalarFunction):
         a: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="First FLOAT[] vector")],
         b: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="Second FLOAT[] vector")],
     ) -> Annotated[pa.DoubleArray, Returns(arrow_type=pa.float64())]:
-        out = [
-            models.cosine_similarity(x, y)
-            for x, y in zip(a.to_pylist(), b.to_pylist(), strict=False)
-        ]
+        out = [models.cosine_similarity(x, y) for x, y in zip(a.to_pylist(), b.to_pylist(), strict=False)]
         return pa.array(out, type=pa.float64())
 
 

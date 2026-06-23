@@ -91,8 +91,7 @@ def resolve_model(model: str | None) -> str:
     name = (model or "").strip() or DEFAULT_MODEL
     if name not in _SUPPORTED_MODELS:
         raise ModelNotAvailableError(
-            f"Unknown embedding model {name!r}. Supported models: "
-            f"{', '.join(sorted(_SUPPORTED_MODELS))}."
+            f"Unknown embedding model {name!r}. Supported models: {', '.join(sorted(_SUPPORTED_MODELS))}."
         )
     return name
 
@@ -132,9 +131,7 @@ def _load_model(model_name: str) -> TextEmbedding:
     try:
         from fastembed import TextEmbedding
     except ImportError as exc:  # pragma: no cover - dependency always present in prod
-        raise ModelNotAvailableError(
-            "fastembed is not installed. Install it with: uv pip install fastembed"
-        ) from exc
+        raise ModelNotAvailableError("fastembed is not installed. Install it with: uv pip install fastembed") from exc
 
     try:
         return TextEmbedding(model_name=model_name, cache_dir=_cache_dir())
