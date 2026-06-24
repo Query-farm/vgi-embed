@@ -47,6 +47,12 @@ _EMBED_CATALOG = Catalog(
     default_schema="main",
     comment="Local text embeddings (fastembed/ONNX) + cosine similarity for semantic search / RAG.",
     tags={
+        "vgi.title": "Local Text Embeddings & Similarity",
+        "vgi.keywords": (
+            "embeddings, embed, text embedding, vector, fastembed, onnx, cosine "
+            "similarity, semantic search, retrieval, rag, bge, sentence transformer, "
+            "nearest neighbor, vss"
+        ),
         "vgi.description_llm": (
             "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
             "(fastembed/ONNX, no torch, no network) and compare them with cosine similarity. "
@@ -76,6 +82,17 @@ _EMBED_CATALOG = Catalog(
             name="main",
             comment="Local text embeddings (fastembed/ONNX) + cosine similarity for SQL",
             tags={
+                "vgi.title": "Embed — main schema",
+                "vgi.keywords": (
+                    "embed, embed_query, embed_passage, similarity, embedding_dim, "
+                    "embed_version, supported_models, embeddings, vector, cosine, "
+                    "semantic search, retrieval, rag"
+                ),
+                # VGI123 classifying tags use BARE keys (not vgi.-namespaced).
+                "domain": "machine-learning",
+                "category": "embeddings",
+                "topic": "semantic-search",
+                "vgi.source_url": "https://github.com/Query-farm/vgi-embed/blob/main/embed_worker.py",
                 "vgi.description_llm": (
                     "Local text-embedding and similarity functions: embed text into FLOAT[] "
                     "vectors with the default or a chosen model, apply retrieval query/passage "
@@ -83,6 +100,17 @@ _EMBED_CATALOG = Catalog(
                     "embedding dimension, and list the supported models."
                 ),
                 "vgi.description_md": ("Local text-embedding and cosine-similarity functions over Apache Arrow."),
+                # VGI506 representative, catalog-qualified example queries for the schema.
+                "vgi.example_queries": (
+                    "SELECT embed.main.embed('hello world');\n"
+                    "SELECT embed.main.embed('hello world', 'BAAI/bge-small-en-v1.5');\n"
+                    "SELECT embed.main.embed_query('how do I reset my password');\n"
+                    "SELECT embed.main.embed_passage('Reset your password in account settings.');\n"
+                    "SELECT embed.main.similarity(embed.main.embed('cat'), embed.main.embed('kitten'));\n"
+                    "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5');\n"
+                    "SELECT embed.main.embed_version();\n"
+                    "SELECT * FROM embed.main.supported_models() ORDER BY model;"
+                ),
             },
             functions=[*SCALAR_FUNCTIONS, *TABLE_FUNCTIONS],
         ),

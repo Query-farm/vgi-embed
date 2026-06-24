@@ -26,7 +26,7 @@ from vgi.table_function import (
 )
 from vgi_rpc.rpc import OutputCollector
 
-from . import models
+from . import meta, models
 from .schema_utils import field
 
 
@@ -62,6 +62,41 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
         description = "Every (model, dim) the embed worker supports"
         categories = ["embedding", "metadata"]
         tags = {
+            **meta.object_tags(
+                title="Supported Models Catalog",
+                description_llm=(
+                    "## supported_models()\n\n"
+                    "List every embedding model the worker can use, one `(model, dim)` "
+                    "pair per row. Takes no arguments.\n\n"
+                    "**When to use.** Use it to discover the valid values for the "
+                    "second argument of `embed(text, model)` (and for `embedding_dim"
+                    "(model)`) and to see each model's output dimension before you "
+                    "size a vector column or VSS index.\n\n"
+                    "**Output.** Columns: `model` (VARCHAR -- the name to pass to "
+                    "`embed`/`embedding_dim`) and `dim` (INTEGER -- the `FLOAT[]` "
+                    "length the model produces). One row per supported model.\n\n"
+                    "**Edge cases.** This is a discovery table function, so reference "
+                    "it in the FROM clause: `FROM embed.supported_models()`."
+                ),
+                description_md=(
+                    "# supported_models()\n\n"
+                    "Every `(model, dim)` the embed worker can produce, one per row.\n\n"
+                    "## Usage\n\n"
+                    "```sql\n"
+                    "SELECT * FROM embed.supported_models() ORDER BY model;\n"
+                    "SELECT dim FROM embed.supported_models()\n"
+                    "  WHERE model = 'BAAI/bge-small-en-v1.5';\n"
+                    "```\n\n"
+                    "## Columns\n\n"
+                    "- `model` (VARCHAR) -- pass to `embed(text, model)` / `embedding_dim(model)`.\n"
+                    "- `dim` (INTEGER) -- the FLOAT[] length the model produces."
+                ),
+                keywords=(
+                    "supported models, list models, available models, model catalog, "
+                    "discovery, dimension, embedding models, bge, what models"
+                ),
+                relative_path="vgi_embed/tables.py",
+            ),
             "vgi.columns_md": (
                 "| column | type | description |\n"
                 "|---|---|---|\n"
