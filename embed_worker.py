@@ -53,7 +53,7 @@ _EMBED_CATALOG = Catalog(
             "similarity, semantic search, retrieval, rag, bge, sentence transformer, "
             "nearest neighbor, vss"
         ),
-        "vgi.description_llm": (
+        "vgi.doc_llm": (
             "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
             "(fastembed/ONNX, no torch, no network) and compare them with cosine similarity. "
             "Use embed(text) for symmetric embeddings, embed_query(text)/embed_passage(text) "
@@ -61,7 +61,7 @@ _EMBED_CATALOG = Catalog(
             "supported_models() to discover available models. Pairs with DuckDB VSS for "
             "semantic search and RAG."
         ),
-        "vgi.description_md": (
+        "vgi.doc_md": (
             "# embed\n\n"
             "Local text embeddings (fastembed/ONNX, no torch) and cosine similarity over "
             "Apache Arrow, for semantic search / RAG with DuckDB VSS.\n\n"
@@ -93,13 +93,44 @@ _EMBED_CATALOG = Catalog(
                 "category": "embeddings",
                 "topic": "semantic-search",
                 "vgi.source_url": "https://github.com/Query-farm/vgi-embed/blob/main/embed_worker.py",
-                "vgi.description_llm": (
-                    "Local text-embedding and similarity functions: embed text into FLOAT[] "
-                    "vectors with the default or a chosen model, apply retrieval query/passage "
-                    "prefixes, compute cosine similarity between vectors, look up a model's "
-                    "embedding dimension, and list the supported models."
+                "vgi.doc_llm": (
+                    "## embed.main schema\n\n"
+                    "The single schema of the `embed` worker. It groups all local "
+                    "text-embedding and vector-similarity functions:\n\n"
+                    "- `embed(text)` / `embed(text, model)` -- symmetric sentence "
+                    "embeddings into `FLOAT[]` vectors.\n"
+                    "- `embed_query(text)` / `embed_passage(text)` -- the query and "
+                    "passage sides of asymmetric retrieval.\n"
+                    "- `similarity(a, b)` -- cosine similarity of two vectors.\n"
+                    "- `embedding_dim(model)` -- a model's output dimension.\n"
+                    "- `embed_version()` -- worker/model identity.\n"
+                    "- `supported_models()` -- table of available `(model, dim)` pairs.\n\n"
+                    "Everything runs in-process via fastembed/ONNX (no torch, no "
+                    "network after the one-time model download). Use it to build "
+                    "semantic search and RAG pipelines that store and rank vectors "
+                    "with DuckDB VSS, all in SQL."
                 ),
-                "vgi.description_md": ("Local text-embedding and cosine-similarity functions over Apache Arrow."),
+                "vgi.doc_md": (
+                    "# embed.main\n\n"
+                    "Local text-embedding and cosine-similarity functions over Apache "
+                    "Arrow, for semantic search and RAG with DuckDB.\n\n"
+                    "## Overview\n\n"
+                    "This schema holds the worker's scalar embedding/similarity helpers "
+                    "and the `supported_models()` discovery table. Embeddings are "
+                    "generated locally with fastembed on ONNX Runtime; the default "
+                    "model is `BAAI/bge-small-en-v1.5` (384-dim).\n\n"
+                    "## Usage\n\n"
+                    "```sql\n"
+                    "SELECT embed.main.embed('hello world');\n"
+                    "SELECT embed.main.similarity(\n"
+                    "  embed.main.embed_query('reset password'),\n"
+                    "  embed.main.embed_passage(body)) FROM docs;\n"
+                    "```\n\n"
+                    "## Notes\n\n"
+                    "- Pair `embed_query` with `embed_passage` for retrieval; use plain "
+                    "`embed` for symmetric text-to-text comparison.\n"
+                    "- NULL or empty text yields a NULL vector."
+                ),
                 # VGI506 representative, catalog-qualified example queries for the schema.
                 "vgi.example_queries": (
                     "SELECT embed.main.embed('hello world');\n"

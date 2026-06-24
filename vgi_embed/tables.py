@@ -97,7 +97,7 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                 ),
                 relative_path="vgi_embed/tables.py",
             ),
-            "vgi.columns_md": (
+            "vgi.result_columns_md": (
                 "| column | type | description |\n"
                 "|---|---|---|\n"
                 "| `model` | VARCHAR | Model name to pass to `embed(text, model)` or `embedding_dim(model)`. |\n"
