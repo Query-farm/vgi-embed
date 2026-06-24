@@ -61,6 +61,14 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
         name = "supported_models"
         description = "Every (model, dim) the embed worker supports"
         categories = ["embedding", "metadata"]
+        tags = {
+            "vgi.columns_md": (
+                "| column | type | description |\n"
+                "|---|---|---|\n"
+                "| `model` | VARCHAR | Model name to pass to `embed(text, model)` or `embedding_dim(model)`. |\n"
+                "| `dim` | INTEGER | Embedding dimension (FLOAT[] length) the model produces. |"
+            ),
+        }
         examples = [
             FunctionExample(
                 sql="SELECT * FROM embed.supported_models() ORDER BY model",

@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.3",
+#     "vgi-python[http]>=0.8.4",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -45,10 +45,45 @@ from vgi_embed.tables import TABLE_FUNCTIONS
 _EMBED_CATALOG = Catalog(
     name="embed",
     default_schema="main",
+    comment="Local text embeddings (fastembed/ONNX) + cosine similarity for semantic search / RAG.",
+    tags={
+        "vgi.description_llm": (
+            "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
+            "(fastembed/ONNX, no torch, no network) and compare them with cosine similarity. "
+            "Use embed(text) for symmetric embeddings, embed_query(text)/embed_passage(text) "
+            "for retrieval asymmetry, similarity(a, b) to score two vectors, and "
+            "supported_models() to discover available models. Pairs with DuckDB VSS for "
+            "semantic search and RAG."
+        ),
+        "vgi.description_md": (
+            "# embed\n\n"
+            "Local text embeddings (fastembed/ONNX, no torch) and cosine similarity over "
+            "Apache Arrow, for semantic search / RAG with DuckDB VSS.\n\n"
+            "Scalars: `embed`, `embed_query`, `embed_passage`, `similarity`, "
+            "`embedding_dim`, `embed_version`. Table: `supported_models`.\n\n"
+            "The default model is `BAAI/bge-small-en-v1.5` (384-dim, MIT), downloaded on "
+            "first use and cached locally."
+        ),
+        "vgi.author": "Query.Farm",
+        "vgi.copyright": "Copyright 2026 Query Farm LLC - https://query.farm",
+        "vgi.license": "MIT",
+        "vgi.support_contact": "https://github.com/Query-farm/vgi-embed/issues",
+        "vgi.support_policy_url": "https://github.com/Query-farm/vgi-embed/blob/main/README.md",
+    },
+    source_url="https://github.com/Query-farm/vgi-embed",
     schemas=[
         Schema(
             name="main",
             comment="Local text embeddings (fastembed/ONNX) + cosine similarity for SQL",
+            tags={
+                "vgi.description_llm": (
+                    "Local text-embedding and similarity functions: embed text into FLOAT[] "
+                    "vectors with the default or a chosen model, apply retrieval query/passage "
+                    "prefixes, compute cosine similarity between vectors, look up a model's "
+                    "embedding dimension, and list the supported models."
+                ),
+                "vgi.description_md": ("Local text-embedding and cosine-similarity functions over Apache Arrow."),
+            },
             functions=[*SCALAR_FUNCTIONS, *TABLE_FUNCTIONS],
         ),
     ],
