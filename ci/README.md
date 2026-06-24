@@ -24,9 +24,40 @@ extension from the Haybarn community channel:
    `INSTALL vgi FROM community;` right before each bare `LOAD vgi;`. `require-env`
    and everything else pass through untouched.
 4. **Run** — [`run-integration.sh`](run-integration.sh) stages the preprocessed
-   tree, points `VGI_EMBED_WORKER` at `uv run --no-sync --python 3.13 embed_worker.py`, warms the
-   extension cache once, then runs the suite in a single `haybarn-unittest`
-   invocation. Any failed assertion exits non-zero and fails the job.
+   tree, resolves `VGI_EMBED_WORKER` per `$TRANSPORT`, warms the extension cache
+   once, then runs the suite in a single `haybarn-unittest` invocation. Any
+   failed assertion exits non-zero and fails the job.
+
+## Transports (subprocess / http / unix)
+
+The same suite runs over every VGI transport. The vgi extension picks the
+transport from the ATTACH `LOCATION` string, which `run-integration.sh` builds
+from `$TRANSPORT` (default `subprocess`):
+
+- **subprocess** — `VGI_EMBED_WORKER` is the stdio command (`uv run --no-sync
+  --python 3.13 embed_worker.py`); the extension spawns the worker per query and
+  talks Arrow IPC over stdin/stdout.
+- **http** — the script boots `embed_worker.py --http --port 0 --port-file <f>`
+  with cwd = the stage dir, polls the port-file (generous 180s timeout — the
+  worker warms its ONNX model at spawn), and sets `VGI_EMBED_WORKER` to the bare
+  `http://127.0.0.1:<port>` (no path suffix). HTTP mode needs the `http` extra
+  (waitress) — `pyproject.toml` lists `vgi-python[http]`, the PEP 723 header in
+  `embed_worker.py` does too, and the integration job installs `--extra http`.
+  Over `http://` the vgi extension routes worker-RPC through DuckDB's httpfs, so
+  the script injects `INSTALL httpfs FROM core; LOAD httpfs;` after each `LOAD
+  vgi;` in the staged tests (http leg only).
+- **unix** — the script boots `embed_worker.py --unix <sock>` with cwd = the
+  stage dir, polls for the socket, and sets `VGI_EMBED_WORKER` to
+  `unix://<sock>`.
+
+The runner SILENTLY SKIPS (exit 0) any test whose error message contains "HTTP"
+or "Unable to connect", so a broken http setup would otherwise fake-pass with
+"All tests were skipped". The script guards against that: it captures the run
+log and fails the leg if every test was skipped.
+
+CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs the
+`integration` job as a `{os} x {transport}` matrix
+(`[ubuntu-latest, macos-latest] x [subprocess, http, unix]`).
 
 ## Run it locally
 
