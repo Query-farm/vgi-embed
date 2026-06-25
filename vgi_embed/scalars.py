@@ -42,8 +42,6 @@ from vgi.metadata import FunctionExample
 
 from . import meta, models
 
-_SRC = "vgi_embed/scalars.py"
-
 # Arrow return type shared by every embedding scalar: a list of float32.
 _VECTOR = pa.list_(pa.float32())
 
@@ -163,11 +161,19 @@ class Embed(ScalarFunction):
                     "- NULL or empty input returns NULL.\n"
                     "- Runs locally (fastembed/ONNX); pairs with DuckDB VSS."
                 ),
-                keywords=(
-                    "embed, embedding, vector, fastembed, onnx, sentence embedding, "
-                    "semantic, text to vector, float array, similarity, rag"
-                ),
-                relative_path=_SRC,
+                keywords=[
+                    "embed",
+                    "embedding",
+                    "vector",
+                    "fastembed",
+                    "onnx",
+                    "sentence embedding",
+                    "semantic",
+                    "text to vector",
+                    "float array",
+                    "similarity",
+                    "rag",
+                ],
             ),
             "vgi.executable_examples": _EXECUTABLE_EXAMPLES,
         }
@@ -227,8 +233,18 @@ class EmbedModel(ScalarFunction):
                 "- NULL or empty input returns NULL.\n"
                 "- The model name is a positional argument (scalars take no named args)."
             ),
-            keywords=("embed, embedding, model, choose model, bge, fastembed, onnx, vector, text to vector, dimension"),
-            relative_path=_SRC,
+            keywords=[
+                "embed",
+                "embedding",
+                "model",
+                "choose model",
+                "bge",
+                "fastembed",
+                "onnx",
+                "vector",
+                "text to vector",
+                "dimension",
+            ],
         )
 
     @classmethod
@@ -296,11 +312,18 @@ class EmbedQuery(ScalarFunction):
                 "- Pair with `embed_passage` for the documents, not plain `embed`.\n"
                 "- NULL or empty input returns NULL."
             ),
-            keywords=(
-                "embed query, retrieval, search, query embedding, asymmetric, "
-                "instruction prefix, bge, rag, semantic search, vector"
-            ),
-            relative_path=_SRC,
+            keywords=[
+                "embed query",
+                "retrieval",
+                "search",
+                "query embedding",
+                "asymmetric",
+                "instruction prefix",
+                "bge",
+                "rag",
+                "semantic search",
+                "vector",
+            ],
         )
 
     @classmethod
@@ -361,11 +384,18 @@ class EmbedPassage(ScalarFunction):
                 "- For bge, passages get no instruction prefix (by design).\n"
                 "- NULL or empty input returns NULL."
             ),
-            keywords=(
-                "embed passage, document embedding, corpus, retrieval, indexing, "
-                "no prefix, bge, rag, semantic search, vector"
-            ),
-            relative_path=_SRC,
+            keywords=[
+                "embed passage",
+                "document embedding",
+                "corpus",
+                "retrieval",
+                "indexing",
+                "no prefix",
+                "bge",
+                "rag",
+                "semantic search",
+                "vector",
+            ],
         )
 
     @classmethod
@@ -430,18 +460,27 @@ class Similarity(ScalarFunction):
                 "- 1.0 = identical direction, 0 = orthogonal, -1 = opposite.\n"
                 "- NULL / empty / length-mismatch returns NULL."
             ),
-            keywords=(
-                "similarity, cosine similarity, cosine, distance, score, rank, "
-                "compare vectors, dot product, nearest neighbor, semantic search"
-            ),
-            relative_path=_SRC,
+            keywords=[
+                "similarity",
+                "cosine similarity",
+                "cosine",
+                "distance",
+                "score",
+                "rank",
+                "compare vectors",
+                "dot product",
+                "nearest neighbor",
+                "semantic search",
+            ],
         )
 
     @classmethod
     def compute(
         cls,
-        a: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="First FLOAT[] vector")],
-        b: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="Second FLOAT[] vector")],
+        a: Annotated[pa.ListArray, Param(arrow_type=_VECTOR, doc="First embedding vector to compare")],
+        b: Annotated[
+            pa.ListArray, Param(arrow_type=_VECTOR, doc="Second embedding vector, compared against the first")
+        ],
     ) -> Annotated[pa.DoubleArray, Returns(arrow_type=pa.float64())]:
         """Cosine similarity of each ``(a, b)`` vector pair."""
         out = [models.cosine_similarity(x, y) for x, y in zip(a.to_pylist(), b.to_pylist(), strict=False)]
@@ -496,11 +535,16 @@ class EmbeddingDim(ScalarFunction):
                 "- Unknown model name -> NULL (no error).\n"
                 "- Use to size a vector column / VSS index before embedding."
             ),
-            keywords=(
-                "embedding dim, dimension, vector length, model size, float array "
-                "length, index width, metadata, supported models"
-            ),
-            relative_path=_SRC,
+            keywords=[
+                "embedding dim",
+                "dimension",
+                "vector length",
+                "model size",
+                "float array length",
+                "index width",
+                "metadata",
+                "supported models",
+            ],
         )
 
     @classmethod
@@ -560,11 +604,17 @@ class EmbedVersion(ScalarFunction):
                 "- Useful for diagnostics and reproducibility.\n"
                 "- Backend version lookup is best-effort."
             ),
-            keywords=(
-                "version, embed_version, build, diagnostics, fastembed, default "
-                "model, worker info, reproducibility, metadata"
-            ),
-            relative_path=_SRC,
+            keywords=[
+                "version",
+                "embed_version",
+                "build",
+                "diagnostics",
+                "fastembed",
+                "default model",
+                "worker info",
+                "reproducibility",
+                "metadata",
+            ],
         )
 
     @classmethod

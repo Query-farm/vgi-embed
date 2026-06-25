@@ -91,11 +91,17 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                     "- `model` (VARCHAR) -- pass to `embed(text, model)` / `embedding_dim(model)`.\n"
                     "- `dim` (INTEGER) -- the FLOAT[] length the model produces."
                 ),
-                keywords=(
-                    "supported models, list models, available models, model catalog, "
-                    "discovery, dimension, embedding models, bge, what models"
-                ),
-                relative_path="vgi_embed/tables.py",
+                keywords=[
+                    "supported models",
+                    "list models",
+                    "available models",
+                    "model catalog",
+                    "discovery",
+                    "dimension",
+                    "embedding models",
+                    "bge",
+                    "what models",
+                ],
             ),
             "vgi.result_columns_md": (
                 "| column | type | description |\n"

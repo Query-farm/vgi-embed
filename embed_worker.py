@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.4",
+#     "vgi-python[http]>=0.8.5",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -33,14 +33,76 @@ Usage:
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from vgi import Worker
-from vgi.catalog import Catalog, Schema
+from vgi.catalog import Catalog, Schema, View
 
 from vgi_embed import models
 from vgi_embed.scalars import SCALAR_FUNCTIONS
 from vgi_embed.tables import TABLE_FUNCTIONS
+
+# VGI311 -- the parameterless table function `supported_models()` always returns
+# the same rows, so we also expose it as a plain VIEW of the same name. That lets
+# consumers write `SELECT * FROM embed.main.supported_models` (no parentheses);
+# the view simply scans the backing table function.
+_SUPPORTED_MODELS_VIEW = View(
+    name="supported_models",
+    definition="SELECT model, dim FROM embed.main.supported_models()",
+    comment="Discovery table of every (model, dim) the embed worker supports.",
+    column_comments={
+        "model": "Model name to pass to embed(text, model) or embedding_dim(model).",
+        "dim": "Embedding dimension (FLOAT[] length) the model produces.",
+    },
+    tags={
+        "vgi.title": "Supported Models (table)",
+        "vgi.doc_llm": (
+            "A ready-to-scan **discovery table** of every `(model, dim)` pair the embed "
+            "worker supports, so you can find the valid model names to pass as the second "
+            "argument of `embed(text, model)` and to `embedding_dim(model)`, along with the "
+            "`FLOAT[]` length each model produces. This is the no-argument table form of the "
+            "`supported_models()` table function -- query it directly with "
+            "`SELECT * FROM embed.main.supported_models` (no parentheses)."
+        ),
+        "vgi.doc_md": (
+            "## supported_models (view)\n\n"
+            "Every `(model, dim)` the embed worker supports, as a plain table.\n\n"
+            "`model` is the name to pass to `embed(text, model)` / `embedding_dim(model)`; "
+            "`dim` is the `FLOAT[]` length the model produces. The no-argument table form of "
+            "`supported_models()` -- scan it with `SELECT * FROM embed.main.supported_models`."
+        ),
+        "vgi.keywords": json.dumps(
+            [
+                "supported models",
+                "list models",
+                "available models",
+                "model catalog",
+                "discovery",
+                "dimension",
+                "embedding models",
+                "bge",
+                "what models",
+            ]
+        ),
+        "domain": "machine-learning",
+        "category": "embeddings",
+        "topic": "supported-models",
+        "vgi.example_queries": json.dumps(
+            [
+                {
+                    "description": "List the supported embedding models and their dimensions.",
+                    "sql": "SELECT model, dim FROM embed.main.supported_models ORDER BY model",
+                },
+                {
+                    "description": "Dimension of the default model.",
+                    "sql": "SELECT dim FROM embed.main.supported_models WHERE model = 'BAAI/bge-small-en-v1.5'",
+                },
+            ]
+        ),
+    },
+)
+
 
 _EMBED_CATALOG = Catalog(
     name="embed",
@@ -48,10 +110,23 @@ _EMBED_CATALOG = Catalog(
     comment="Local text embeddings (fastembed/ONNX) + cosine similarity for semantic search / RAG.",
     tags={
         "vgi.title": "Local Text Embeddings & Similarity",
-        "vgi.keywords": (
-            "embeddings, embed, text embedding, vector, fastembed, onnx, cosine "
-            "similarity, semantic search, retrieval, rag, bge, sentence transformer, "
-            "nearest neighbor, vss"
+        "vgi.keywords": json.dumps(
+            [
+                "embeddings",
+                "embed",
+                "text embedding",
+                "vector",
+                "fastembed",
+                "onnx",
+                "cosine similarity",
+                "semantic search",
+                "retrieval",
+                "rag",
+                "bge",
+                "sentence transformer",
+                "nearest neighbor",
+                "vss",
+            ]
         ),
         "vgi.doc_llm": (
             "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
@@ -83,16 +158,27 @@ _EMBED_CATALOG = Catalog(
             comment="Local text embeddings (fastembed/ONNX) + cosine similarity for SQL",
             tags={
                 "vgi.title": "Embed — main schema",
-                "vgi.keywords": (
-                    "embed, embed_query, embed_passage, similarity, embedding_dim, "
-                    "embed_version, supported_models, embeddings, vector, cosine, "
-                    "semantic search, retrieval, rag"
+                "vgi.keywords": json.dumps(
+                    [
+                        "embed",
+                        "embed_query",
+                        "embed_passage",
+                        "similarity",
+                        "embedding_dim",
+                        "embed_version",
+                        "supported_models",
+                        "embeddings",
+                        "vector",
+                        "cosine",
+                        "semantic search",
+                        "retrieval",
+                        "rag",
+                    ]
                 ),
                 # VGI123 classifying tags use BARE keys (not vgi.-namespaced).
                 "domain": "machine-learning",
                 "category": "embeddings",
                 "topic": "semantic-search",
-                "vgi.source_url": "https://github.com/Query-farm/vgi-embed/blob/main/embed_worker.py",
                 "vgi.doc_llm": (
                     "## embed.main schema\n\n"
                     "The single schema of the `embed` worker. It groups all local "
@@ -144,6 +230,7 @@ _EMBED_CATALOG = Catalog(
                 ),
             },
             functions=[*SCALAR_FUNCTIONS, *TABLE_FUNCTIONS],
+            views=[_SUPPORTED_MODELS_VIEW],
         ),
     ],
 )
