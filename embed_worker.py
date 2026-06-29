@@ -138,6 +138,7 @@ _EMBED_CATALOG = Catalog(
         ),
         "vgi.doc_md": (
             "# Local Text Embeddings & Semantic Search in SQL\n\n"
+            "![fastembed logo](https://qdrant.tech/images/logo_with_text.png)\n\n"
             "**Turn text into vector embeddings directly in DuckDB SQL** — generate "
             "fixed-length `FLOAT[]` embedding vectors and score them with cosine "
             "similarity for semantic search, retrieval-augmented generation (RAG), "
