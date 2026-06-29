@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.5",
+#     "vgi-python[http]>=0.8.8",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -137,13 +137,49 @@ _EMBED_CATALOG = Catalog(
             "semantic search and RAG."
         ),
         "vgi.doc_md": (
-            "# embed\n\n"
-            "Local text embeddings (fastembed/ONNX, no torch) and cosine similarity over "
-            "Apache Arrow, for semantic search / RAG with DuckDB VSS.\n\n"
-            "Scalars: `embed`, `embed_query`, `embed_passage`, `similarity`, "
-            "`embedding_dim`, `embed_version`. Table: `supported_models`.\n\n"
-            "The default model is `BAAI/bge-small-en-v1.5` (384-dim, MIT), downloaded on "
-            "first use and cached locally."
+            "# Local Text Embeddings & Semantic Search in SQL\n\n"
+            "**Turn text into vector embeddings directly in DuckDB SQL** — generate "
+            "fixed-length `FLOAT[]` embedding vectors and score them with cosine "
+            "similarity for semantic search, retrieval-augmented generation (RAG), "
+            "and nearest-neighbor ranking, all without leaving your query and "
+            "without sending a single byte to an external API.\n\n"
+            "The `embed` extension brings sentence-transformer text embeddings to "
+            "SQL for data engineers, RAG builders, and search teams who want vector "
+            "search inside the database instead of a separate embedding service. "
+            "Embeddings are computed **entirely in-process and offline** — there is "
+            "no torch dependency, no GPU requirement, and no network call after the "
+            "one-time model download — so the same query runs identically on a "
+            "laptop, in CI, and in production.\n\n"
+            "Under the hood it is powered by [fastembed](https://github.com/qdrant/fastembed) "
+            "from [Qdrant](https://qdrant.tech) (Apache-2.0), which runs quantized "
+            "sentence-transformer models through [ONNX Runtime](https://onnxruntime.ai) "
+            "([source](https://github.com/microsoft/onnxruntime)). The default model is "
+            "[`BAAI/bge-small-en-v1.5`](https://huggingface.co/BAAI/bge-small-en-v1.5) "
+            "(384-dimensional, MIT licensed), downloaded on first use and cached "
+            "locally; larger `bge` models and `all-MiniLM-L6-v2` are also supported. "
+            "Vectors are returned over Apache Arrow as native DuckDB `FLOAT[]` lists, "
+            "ready to index and rank with the "
+            "[DuckDB VSS extension](https://duckdb.org/docs/extensions/vss.html).\n\n"
+            "## Functions\n\n"
+            "Use `embed(text)` (or `embed(text, model)`) for symmetric text-to-text "
+            "embeddings, and the asymmetric retrieval pair `embed_query(text)` / "
+            "`embed_passage(text)` to embed search queries and document passages "
+            "with the model's recommended instruction prefixes. Score any two "
+            "vectors with `similarity(a, b)` (cosine similarity), look up a model's "
+            "output size with `embedding_dim(model)`, check the worker/model identity "
+            "with `embed_version()`, and discover every available model with the "
+            "`supported_models()` table function.\n\n"
+            "```sql\n"
+            "-- Rank documents by semantic relevance to a query\n"
+            "SELECT id\n"
+            "FROM docs\n"
+            "ORDER BY embed.similarity(\n"
+            "  embed.embed_query('how do I reset my password'),\n"
+            "  embed.embed_passage(body)) DESC\n"
+            "LIMIT 5;\n"
+            "```\n\n"
+            "NULL or empty input text yields a NULL vector, and the model is loaded "
+            "once and amortized across every row in a scan."
         ),
         "vgi.author": "Query.Farm",
         "vgi.copyright": "Copyright 2026 Query Farm LLC - https://query.farm",
