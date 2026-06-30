@@ -28,13 +28,13 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "vgi-python[http]>=0.8.8",
+    "vgi-python[http]>=0.9.0",
     "fastembed>=0.3",
     "pyarrow",
 ]
 
 [project.optional-dependencies]
-http = ["vgi-python[http]>=0.8.8"]
+http = ["vgi-python[http]>=0.9.0"]
 dev = [
     "pytest>=8",
     "ruff>=0.5",
