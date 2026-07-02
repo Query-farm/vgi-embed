@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.8.8",
+#     "vgi-python[http]>=0.9.0",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -62,15 +62,20 @@ _SUPPORTED_MODELS_VIEW = View(
             "worker supports, so you can find the valid model names to pass as the second "
             "argument of `embed(text, model)` and to `embedding_dim(model)`, along with the "
             "`FLOAT[]` length each model produces. This is the no-argument table form of the "
-            "`supported_models()` table function -- query it directly with "
-            "`SELECT * FROM embed.main.supported_models` (no parentheses)."
+            "`supported_models()` table function -- query it directly (no parentheses):\n\n"
+            "```sql\n"
+            "SELECT * FROM embed.main.supported_models;\n"
+            "```"
         ),
         "vgi.doc_md": (
             "## supported_models (view)\n\n"
             "Every `(model, dim)` the embed worker supports, as a plain table.\n\n"
             "`model` is the name to pass to `embed(text, model)` / `embedding_dim(model)`; "
             "`dim` is the `FLOAT[]` length the model produces. The no-argument table form of "
-            "`supported_models()` -- scan it with `SELECT * FROM embed.main.supported_models`."
+            "`supported_models()` -- scan it directly:\n\n"
+            "```sql\n"
+            "SELECT * FROM embed.main.supported_models;\n"
+            "```"
         ),
         "vgi.keywords": json.dumps(
             [
@@ -88,6 +93,7 @@ _SUPPORTED_MODELS_VIEW = View(
         "domain": "machine-learning",
         "category": "embeddings",
         "topic": "supported-models",
+        "vgi.category": "discovery",
         "vgi.example_queries": json.dumps(
             [
                 {
@@ -130,11 +136,18 @@ _EMBED_CATALOG = Catalog(
         ),
         "vgi.doc_llm": (
             "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
-            "(fastembed/ONNX, no torch, no network) and compare them with cosine similarity. "
-            "Use embed(text) for symmetric embeddings, embed_query(text)/embed_passage(text) "
-            "for retrieval asymmetry, similarity(a, b) to score two vectors, and "
-            "supported_models() to discover available models. Pairs with DuckDB VSS for "
-            "semantic search and RAG."
+            "(fastembed/ONNX, no torch, no network call after a one-time model download) "
+            "and compare them with cosine similarity. This is the offline, in-database "
+            "building block for semantic search, retrieval-augmented generation (RAG), "
+            "clustering, and near-duplicate detection: embed a corpus once, embed a "
+            "query, and rank rows by vector similarity -- pairing naturally with the "
+            "DuckDB VSS extension for indexed nearest-neighbor search. It covers both "
+            "symmetric text-to-text embedding and the asymmetric query/passage "
+            "convention that retrieval models expect, plus a pure-arithmetic similarity "
+            "score. Reach for it whenever you want vectors and ranking inside SQL "
+            "instead of standing up a separate embedding service. List this catalog's "
+            "schema to discover the embedding, retrieval, similarity, and "
+            "model-discovery functions it provides."
         ),
         "vgi.doc_md": (
             "# Local Text Embeddings & Semantic Search in SQL\n\n"
@@ -144,7 +157,7 @@ _EMBED_CATALOG = Catalog(
             "similarity for semantic search, retrieval-augmented generation (RAG), "
             "and nearest-neighbor ranking, all without leaving your query and "
             "without sending a single byte to an external API.\n\n"
-            "The `embed` extension brings sentence-transformer text embeddings to "
+            "The **embed** extension brings sentence-transformer text embeddings to "
             "SQL for data engineers, RAG builders, and search teams who want vector "
             "search inside the database instead of a separate embedding service. "
             "Embeddings are computed **entirely in-process and offline** — there is "
@@ -161,23 +174,19 @@ _EMBED_CATALOG = Catalog(
             "Vectors are returned over Apache Arrow as native DuckDB `FLOAT[]` lists, "
             "ready to index and rank with the "
             "[DuckDB VSS extension](https://duckdb.org/docs/extensions/vss.html).\n\n"
-            "## Functions\n\n"
-            "Use `embed(text)` (or `embed(text, model)`) for symmetric text-to-text "
-            "embeddings, and the asymmetric retrieval pair `embed_query(text)` / "
-            "`embed_passage(text)` to embed search queries and document passages "
-            "with the model's recommended instruction prefixes. Score any two "
-            "vectors with `similarity(a, b)` (cosine similarity), look up a model's "
-            "output size with `embedding_dim(model)`, check the worker/model identity "
-            "with `embed_version()`, and discover every available model with the "
-            "`supported_models()` table function.\n\n"
+            "## How it works\n\n"
+            "There are two embedding modes. *Symmetric* embedding maps any text to a "
+            "vector for text-to-text comparison (dedup, clustering, classification). "
+            "*Asymmetric* retrieval follows the query/passage convention these models "
+            "are trained on: a short search query and a longer document are embedded "
+            "with slightly different instruction prefixes so they land in the same "
+            "space, which improves recall over plain symmetric embedding. Ranking is "
+            "then just cosine similarity between vectors -- pure arithmetic, no model "
+            "load. Model discovery and dimension lookups let you size a vector column "
+            "or VSS index ahead of time.\n\n"
             "```sql\n"
-            "-- Rank documents by semantic relevance to a query\n"
-            "SELECT id\n"
-            "FROM docs\n"
-            "ORDER BY embed.similarity(\n"
-            "  embed.embed_query('how do I reset my password'),\n"
-            "  embed.embed_passage(body)) DESC\n"
-            "LIMIT 5;\n"
+            "-- A sentence is more similar to itself than to an unrelated one\n"
+            "SELECT embed.similarity(embed.embed('cat'), embed.embed('kitten')) AS score;\n"
             "```\n\n"
             "NULL or empty input text yields a NULL vector, and the model is loaded "
             "once and amortized across every row in a scan."
@@ -187,6 +196,62 @@ _EMBED_CATALOG = Catalog(
         "vgi.license": "MIT",
         "vgi.support_contact": "https://github.com/Query-farm/vgi-embed/issues",
         "vgi.support_policy_url": "https://github.com/Query-farm/vgi-embed/blob/main/README.md",
+        # VGI152/VGI920 -- a fixed analyst-task suite `vgi-lint simulate` runs to
+        # measure how well an agent can actually drive this worker. Every task has
+        # a deterministic reference despite embeddings being float-valued: we
+        # assert vector *length*, self-similarity rounded to 1.0, a planted
+        # related>unrelated ordering, and the discovery table's exact rows.
+        "vgi.agent_test_tasks": json.dumps(
+            [
+                {
+                    "name": "default_model_dimension",
+                    "prompt": (
+                        "What is the vector length (embedding dimension) of the default model, BAAI/bge-small-en-v1.5?"
+                    ),
+                    "reference_sql": (
+                        "SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'"
+                    ),
+                    "success_criteria": "Returns the default model's dimension, 384.",
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "list_supported_models",
+                    "prompt": "List the names of every embedding model this worker supports.",
+                    "reference_sql": "SELECT model FROM embed.main.supported_models() ORDER BY model",
+                    "success_criteria": "Returns the set of supported model names.",
+                    "unordered": True,
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "self_similarity_is_one",
+                    "prompt": (
+                        "Confirm that a piece of text is maximally similar to itself: "
+                        "compute the cosine similarity of the embedding of the word "
+                        "'database' with itself, rounded to 3 decimal places."
+                    ),
+                    "reference_sql": (
+                        "SELECT ROUND(embed.main.similarity("
+                        "embed.main.embed('database'), embed.main.embed('database')), 3) AS sim"
+                    ),
+                    "success_criteria": "Returns 1.0 (a vector is identical to itself).",
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "related_more_similar_than_unrelated",
+                    "prompt": (
+                        "Is the word 'dog' more semantically similar to 'puppy' than to "
+                        "'airplane'? Return a single boolean."
+                    ),
+                    "reference_sql": (
+                        "SELECT embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')) "
+                        "> embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) "
+                        "AS related_more_similar"
+                    ),
+                    "success_criteria": "Returns true; a related pair scores higher than an unrelated pair.",
+                    "ignore_column_names": True,
+                },
+            ]
+        ),
     },
     source_url="https://github.com/Query-farm/vgi-embed",
     schemas=[
@@ -216,42 +281,64 @@ _EMBED_CATALOG = Catalog(
                 "domain": "machine-learning",
                 "category": "embeddings",
                 "topic": "semantic-search",
+                # VGI413 navigation/SEO registry: ordered categories every object
+                # (function/view) is assigned to via its own `vgi.category` tag.
+                "vgi.categories": json.dumps(
+                    [
+                        {
+                            "name": "embedding",
+                            "title": "Embedding",
+                            "description": "Turn text into fixed-length FLOAT[] vectors for symmetric text-to-text comparison.",
+                        },
+                        {
+                            "name": "retrieval",
+                            "title": "Retrieval",
+                            "description": "Asymmetric query/passage embedding for semantic search and RAG.",
+                        },
+                        {
+                            "name": "similarity",
+                            "title": "Similarity",
+                            "description": "Score and rank embedding vectors by cosine similarity.",
+                        },
+                        {
+                            "name": "discovery",
+                            "title": "Discovery",
+                            "description": "Introspect supported models, vector dimensions, and worker identity.",
+                        },
+                    ]
+                ),
                 "vgi.doc_llm": (
                     "## embed.main schema\n\n"
-                    "The single schema of the `embed` worker. It groups all local "
-                    "text-embedding and vector-similarity functions:\n\n"
-                    "- `embed(text)` / `embed(text, model)` -- symmetric sentence "
-                    "embeddings into `FLOAT[]` vectors.\n"
-                    "- `embed_query(text)` / `embed_passage(text)` -- the query and "
-                    "passage sides of asymmetric retrieval.\n"
-                    "- `similarity(a, b)` -- cosine similarity of two vectors.\n"
-                    "- `embedding_dim(model)` -- a model's output dimension.\n"
-                    "- `embed_version()` -- worker/model identity.\n"
-                    "- `supported_models()` -- table of available `(model, dim)` pairs.\n\n"
+                    "The single schema of the embed worker. It groups the local "
+                    "text-embedding and vector-similarity surface into a few concepts: "
+                    "symmetric text-to-text embedding, the asymmetric query/passage "
+                    "convention used for retrieval, a pure-arithmetic cosine-similarity "
+                    "score, and model-discovery/dimension helpers for sizing vector "
+                    "columns and indexes.\n\n"
                     "Everything runs in-process via fastembed/ONNX (no torch, no "
                     "network after the one-time model download). Use it to build "
                     "semantic search and RAG pipelines that store and rank vectors "
-                    "with DuckDB VSS, all in SQL."
+                    "with DuckDB VSS, all in SQL. List the schema to see the exact "
+                    "functions and their signatures."
                 ),
                 "vgi.doc_md": (
                     "# embed.main\n\n"
                     "Local text-embedding and cosine-similarity functions over Apache "
                     "Arrow, for semantic search and RAG with DuckDB.\n\n"
                     "## Overview\n\n"
-                    "This schema holds the worker's scalar embedding/similarity helpers "
-                    "and the `supported_models()` discovery table. Embeddings are "
-                    "generated locally with fastembed on ONNX Runtime; the default "
-                    "model is `BAAI/bge-small-en-v1.5` (384-dim).\n\n"
+                    "This schema holds the worker's scalar embedding and similarity "
+                    "helpers plus a model-discovery table. Embeddings are generated "
+                    "locally with fastembed on ONNX Runtime; the default model is "
+                    "`BAAI/bge-small-en-v1.5` (384-dim). Symmetric embedding is for "
+                    "text-to-text comparison; the query/passage pair is for asymmetric "
+                    "retrieval.\n\n"
                     "## Usage\n\n"
                     "```sql\n"
-                    "SELECT embed.main.embed('hello world');\n"
-                    "SELECT embed.main.similarity(\n"
-                    "  embed.main.embed_query('reset password'),\n"
-                    "  embed.main.embed_passage(body)) FROM docs;\n"
+                    "SELECT embed.similarity(embed.embed('cat'), embed.embed('kitten')) AS score;\n"
                     "```\n\n"
                     "## Notes\n\n"
-                    "- Pair `embed_query` with `embed_passage` for retrieval; use plain "
-                    "`embed` for symmetric text-to-text comparison.\n"
+                    "- Use the query/passage pair for retrieval; use plain symmetric "
+                    "embedding for text-to-text comparison.\n"
                     "- NULL or empty text yields a NULL vector."
                 ),
                 # VGI506 representative, catalog-qualified example queries for the schema.

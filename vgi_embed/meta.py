@@ -31,11 +31,20 @@ def object_tags(
     description_llm: str,
     description_md: str,
     keywords: list[str],
+    category: str | None = None,
 ) -> dict[str, str]:
-    """Assemble the per-object VGI124/112/113/126/138 tag set."""
-    return {
+    """Assemble the per-object VGI124/112/113/126/138 tag set.
+
+    ``category`` (VGI411) names one of the schema's ``vgi.categories`` registry
+    entries; every function/view carries exactly one so the worker's navigation
+    and SEO listing sections stay populated.
+    """
+    tags = {
         "vgi.title": title,
         "vgi.doc_llm": description_llm,
         "vgi.doc_md": description_md,
         "vgi.keywords": keywords_json(keywords),
     }
+    if category is not None:
+        tags["vgi.category"] = category
+    return tags

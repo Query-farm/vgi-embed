@@ -14,3 +14,5 @@ models/
 .fastembed_cache/
 fastembed_cache/
 .cache/
+# vgi-lint execute/AI caches
+.vgi-*-cache.json

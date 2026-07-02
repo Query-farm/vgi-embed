@@ -76,7 +76,10 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                     "`embed`/`embedding_dim`) and `dim` (INTEGER -- the `FLOAT[]` "
                     "length the model produces). One row per supported model.\n\n"
                     "**Edge cases.** This is a discovery table function, so reference "
-                    "it in the FROM clause: `FROM embed.supported_models()`."
+                    "it in the FROM clause:\n\n"
+                    "```sql\n"
+                    "SELECT * FROM embed.supported_models();\n"
+                    "```"
                 ),
                 description_md=(
                     "# supported_models()\n\n"
@@ -102,6 +105,7 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                     "bge",
                     "what models",
                 ],
+                category="discovery",
             ),
             "vgi.result_columns_md": (
                 "| column | type | description |\n"

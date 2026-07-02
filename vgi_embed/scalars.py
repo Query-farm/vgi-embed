@@ -174,6 +174,7 @@ class Embed(ScalarFunction):
                     "similarity",
                     "rag",
                 ],
+                category="embedding",
             ),
             "vgi.executable_examples": _EXECUTABLE_EXAMPLES,
         }
@@ -245,6 +246,7 @@ class EmbedModel(ScalarFunction):
                 "text to vector",
                 "dimension",
             ],
+            category="embedding",
         )
 
     @classmethod
@@ -324,6 +326,7 @@ class EmbedQuery(ScalarFunction):
                 "semantic search",
                 "vector",
             ],
+            category="retrieval",
         )
 
     @classmethod
@@ -396,6 +399,7 @@ class EmbedPassage(ScalarFunction):
                 "semantic search",
                 "vector",
             ],
+            category="retrieval",
         )
 
     @classmethod
@@ -472,6 +476,7 @@ class Similarity(ScalarFunction):
                 "nearest neighbor",
                 "semantic search",
             ],
+            category="similarity",
         )
 
     @classmethod
@@ -545,6 +550,7 @@ class EmbeddingDim(ScalarFunction):
                 "metadata",
                 "supported models",
             ],
+            category="discovery",
         )
 
     @classmethod
@@ -615,6 +621,7 @@ class EmbedVersion(ScalarFunction):
                 "reproducibility",
                 "metadata",
             ],
+            category="discovery",
         )
 
     @classmethod
