@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.9.0",
+#     "vgi-python[http]>=0.14.0",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -43,13 +43,28 @@ from vgi_embed import models
 from vgi_embed.scalars import SCALAR_FUNCTIONS
 from vgi_embed.tables import TABLE_FUNCTIONS
 
-# VGI311 -- the parameterless table function `supported_models()` always returns
-# the same rows, so we also expose it as a plain VIEW of the same name. That lets
-# consumers write `SELECT * FROM embed.main.supported_models` (no parentheses);
-# the view simply scans the backing table function.
+
+def _models_values_sql() -> str:
+    """Build a self-contained ``VALUES`` relation of every ``(model, dim)`` pair.
+
+    The rows are sourced from :func:`vgi_embed.models.supported_models` -- the
+    worker's own registry -- so the browsable view and the runtime behaviour can
+    never drift. Emitting literal rows (rather than scanning the backing table
+    function) keeps the view a genuine, credential-free browsable relation: it
+    resolves without spawning the model or the table function at all.
+    """
+    rows = ",\n        ".join(f"('{model}', {dim})" for model, dim in models.supported_models())
+    return f"SELECT model, dim FROM (VALUES\n        {rows}\n    ) AS t(model, dim)"
+
+
+# The model registry is a small, fixed lookup, so we expose it as a genuine
+# browsable VIEW (VGI146) backed by a literal ``VALUES`` relation rather than a
+# thin wrapper over the `supported_models()` table function (which would trip
+# VGI145). Rows are generated from `models.supported_models()` so the view and
+# the runtime stay in lockstep; the view scans credential-free (no model load).
 _SUPPORTED_MODELS_VIEW = View(
     name="supported_models",
-    definition="SELECT model, dim FROM embed.main.supported_models()",
+    definition=_models_values_sql(),
     comment="Discovery table of every (model, dim) the embed worker supports.",
     column_comments={
         "model": "Model name to pass to embed(text, model) or embedding_dim(model).",
@@ -61,21 +76,22 @@ _SUPPORTED_MODELS_VIEW = View(
             "A ready-to-scan **discovery table** of every `(model, dim)` pair the embed "
             "worker supports, so you can find the valid model names to pass as the second "
             "argument of `embed(text, model)` and to `embedding_dim(model)`, along with the "
-            "`FLOAT[]` length each model produces. This is the no-argument table form of the "
-            "`supported_models()` table function -- query it directly (no parentheses):\n\n"
-            "```sql\n"
-            "SELECT * FROM embed.main.supported_models;\n"
-            "```"
+            "`FLOAT[]` length each model produces. Browse this view directly (no "
+            "parentheses, no arguments); it is the parenthesis-free counterpart of the "
+            "`supported_models()` table function. The `model` column lists the four "
+            "supported bge / MiniLM checkpoints and the `dim` column their vector widths "
+            "(384 or 768). Runnable browse/filter examples are attached as example queries."
         ),
         "vgi.doc_md": (
             "## supported_models (view)\n\n"
-            "Every `(model, dim)` the embed worker supports, as a plain table.\n\n"
-            "`model` is the name to pass to `embed(text, model)` / `embedding_dim(model)`; "
-            "`dim` is the `FLOAT[]` length the model produces. The no-argument table form of "
-            "`supported_models()` -- scan it directly:\n\n"
-            "```sql\n"
-            "SELECT * FROM embed.main.supported_models;\n"
-            "```"
+            "Every `(model, dim)` the embed worker supports, as a plain browsable table.\n\n"
+            "The `model` column holds the name you pass to `embed(text, model)` and "
+            "`embedding_dim(model)`; the `dim` column is the `FLOAT[]` vector length that "
+            "model produces (384 for the small bge / MiniLM checkpoints, 768 for "
+            "`bge-base`). This view is the no-argument, parenthesis-free counterpart of "
+            "the `supported_models()` table function -- browse it to discover valid model "
+            "names before embedding a corpus. See the attached example queries to browse, "
+            "order, and filter it."
         ),
         "vgi.keywords": json.dumps(
             [
@@ -197,21 +213,23 @@ _EMBED_CATALOG = Catalog(
         "vgi.support_contact": "https://github.com/Query-farm/vgi-embed/issues",
         "vgi.support_policy_url": "https://github.com/Query-farm/vgi-embed/blob/main/README.md",
         # VGI152/VGI920 -- a fixed analyst-task suite `vgi-lint simulate` runs to
-        # measure how well an agent can actually drive this worker. Every task has
-        # a deterministic reference despite embeddings being float-valued: we
-        # assert vector *length*, self-similarity rounded to 1.0, a planted
-        # related>unrelated ordering, and the discovery table's exact rows.
+        # measure how well an agent can actually drive this worker. Because
+        # embeddings are float-valued (and the analyst may round/rename a raw
+        # numeric answer), every task grades on a STABLE reference: a plain
+        # BOOLEAN predicate (dimension = N, related > unrelated, retrieval ranks
+        # the relevant passage higher, version string mentions fastembed),
+        # self-similarity ROUNDed to 1.0, or the discovery table's exact rows --
+        # never a bare float/int compare, which the pilot showed is a coin-flip.
         "vgi.agent_test_tasks": json.dumps(
             [
                 {
                     "name": "default_model_dimension",
                     "prompt": (
-                        "What is the vector length (embedding dimension) of the default model, BAAI/bge-small-en-v1.5?"
+                        "The default model is BAAI/bge-small-en-v1.5. Does it produce "
+                        "384-dimensional embedding vectors? Return a single boolean."
                     ),
-                    "reference_sql": (
-                        "SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'"
-                    ),
-                    "success_criteria": "Returns the default model's dimension, 384.",
+                    "reference_sql": "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5') = 384 AS is_384",
+                    "success_criteria": "Returns true; the default model's embedding dimension is 384.",
                     "ignore_column_names": True,
                 },
                 {
@@ -248,6 +266,48 @@ _EMBED_CATALOG = Catalog(
                         "AS related_more_similar"
                     ),
                     "success_criteria": "Returns true; a related pair scores higher than an unrelated pair.",
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "base_model_dimension",
+                    "prompt": (
+                        "Does the model 'BAAI/bge-base-en-v1.5' produce 768-dimensional "
+                        "embedding vectors? Return a single boolean."
+                    ),
+                    "reference_sql": "SELECT embed.main.embedding_dim('BAAI/bge-base-en-v1.5') = 768 AS is_768",
+                    "success_criteria": "Returns true; the bge-base model's embedding dimension is 768.",
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "retrieval_ranks_relevant_passage_higher",
+                    "prompt": (
+                        "Using the retrieval embedding functions, is the search query "
+                        "'how do I reset my password' more similar to the passage 'Reset your "
+                        "password from the account settings page.' than to the passage 'The "
+                        "weather today is sunny and warm.'? Return a single boolean."
+                    ),
+                    "reference_sql": (
+                        "SELECT embed.main.similarity("
+                        "embed.main.embed_query('how do I reset my password'), "
+                        "embed.main.embed_passage('Reset your password from the account settings page.')) "
+                        "> embed.main.similarity("
+                        "embed.main.embed_query('how do I reset my password'), "
+                        "embed.main.embed_passage('The weather today is sunny and warm.')) "
+                        "AS relevant_ranks_higher"
+                    ),
+                    "success_criteria": (
+                        "Returns true; the query embeds closer to the relevant passage than to the unrelated one."
+                    ),
+                    "ignore_column_names": True,
+                },
+                {
+                    "name": "version_reports_fastembed_backend",
+                    "prompt": (
+                        "Does this worker's version / identity string report that it uses the "
+                        "fastembed backend? Return a single boolean."
+                    ),
+                    "reference_sql": "SELECT embed.main.embed_version() LIKE '%fastembed%'",
+                    "success_criteria": "Returns true; the identity string names the fastembed backend.",
                     "ignore_column_names": True,
                 },
             ]

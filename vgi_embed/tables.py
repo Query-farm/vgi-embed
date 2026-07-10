@@ -11,6 +11,7 @@ per-row embedding/similarity functions are *scalars* and live in
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -75,21 +76,20 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                     "**Output.** Columns: `model` (VARCHAR -- the name to pass to "
                     "`embed`/`embedding_dim`) and `dim` (INTEGER -- the `FLOAT[]` "
                     "length the model produces). One row per supported model.\n\n"
-                    "**Edge cases.** This is a discovery table function, so reference "
-                    "it in the FROM clause:\n\n"
-                    "```sql\n"
-                    "SELECT * FROM embed.supported_models();\n"
-                    "```"
+                    "**Edge cases.** This is a discovery table function -- reference it in "
+                    "the query's table position, `embed.main.supported_models()`, rather than "
+                    "as a scalar. A parenthesis-free `supported_models` view exposes the same "
+                    "rows for plain browsing. Runnable, catalog-qualified examples are "
+                    "attached as example queries."
                 ),
                 description_md=(
                     "# supported_models()\n\n"
                     "Every `(model, dim)` the embed worker can produce, one per row.\n\n"
                     "## Usage\n\n"
-                    "```sql\n"
-                    "SELECT * FROM embed.supported_models() ORDER BY model;\n"
-                    "SELECT dim FROM embed.supported_models()\n"
-                    "  WHERE model = 'BAAI/bge-small-en-v1.5';\n"
-                    "```\n\n"
+                    "Reference `supported_models()` in the table position to browse the "
+                    "registry, project just the `model` column to enumerate valid model "
+                    "names, or filter by `model` to read a single checkpoint's `dim`. "
+                    "Runnable, catalog-qualified examples are attached as example queries.\n\n"
                     "## Columns\n\n"
                     "- `model` (VARCHAR) -- pass to `embed(text, model)` / `embedding_dim(model)`.\n"
                     "- `dim` (INTEGER) -- the FLOAT[] length the model produces."
@@ -107,20 +107,28 @@ class SupportedModelsFunction(TableFunctionGenerator[_NoArgs]):
                 ],
                 category="discovery",
             ),
-            "vgi.result_columns_md": (
-                "| column | type | description |\n"
-                "|---|---|---|\n"
-                "| `model` | VARCHAR | Model name to pass to `embed(text, model)` or `embedding_dim(model)`. |\n"
-                "| `dim` | INTEGER | Embedding dimension (FLOAT[] length) the model produces. |"
+            "vgi.result_columns_schema": json.dumps(
+                [
+                    {
+                        "name": "model",
+                        "type": "VARCHAR",
+                        "description": "Model name to pass to embed(text, model) or embedding_dim(model).",
+                    },
+                    {
+                        "name": "dim",
+                        "type": "INTEGER",
+                        "description": "Embedding dimension (FLOAT[] length) the model produces.",
+                    },
+                ]
             ),
         }
         examples = [
             FunctionExample(
-                sql="SELECT * FROM embed.supported_models() ORDER BY model",
+                sql="SELECT model, dim FROM embed.main.supported_models() ORDER BY model",
                 description="List the supported embedding models and their dimensions",
             ),
             FunctionExample(
-                sql="SELECT dim FROM embed.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'",
+                sql=("SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'"),
                 description="Dimension of the default model",
             ),
         ]
