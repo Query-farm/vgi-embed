@@ -90,6 +90,9 @@ strict = true
 warn_return_any = true
 warn_unused_ignores = true
 
+# pyarrow ships no py.typed marker in some published wheels, so under --strict
+# mypy raises import-untyped for it depending on the resolved version; treat it
+# (like fastembed/onnxruntime) as an untyped third-party import.
 [[tool.mypy.overrides]]
-module = ["fastembed.*", "onnxruntime.*"]
+module = ["fastembed.*", "onnxruntime.*", "pyarrow.*"]
 ignore_missing_imports = true
