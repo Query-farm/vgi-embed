@@ -98,7 +98,7 @@ SELECT embed.similarity(embed.embed_query('reset password'),
 ----
 true
 
-# ---- embedding_dim / embed_version -----------------------------------------
+# ---- embedding_dim ---------------------------------------------------------
 
 query I
 SELECT embed.embedding_dim('BAAI/bge-small-en-v1.5');
@@ -106,9 +106,9 @@ SELECT embed.embedding_dim('BAAI/bge-small-en-v1.5');
 384
 
 query I
-SELECT embed.embed_version() LIKE 'vgi-embed%';
+SELECT embed.embedding_dim('BAAI/bge-base-en-v1.5');
 ----
-true
+768
 
 statement ok
 DETACH embed;

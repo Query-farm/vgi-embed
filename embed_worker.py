@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "vgi-python[http]>=0.14.0",
+#     "vgi-python[http]>=0.16.0",
 #     "fastembed>=0.3",
 # ]
 # ///
@@ -90,8 +90,7 @@ _SUPPORTED_MODELS_VIEW = View(
             "model produces (384 for the small bge / MiniLM checkpoints, 768 for "
             "`bge-base`). This view is the no-argument, parenthesis-free counterpart of "
             "the `supported_models()` table function -- browse it to discover valid model "
-            "names before embedding a corpus. See the attached example queries to browse, "
-            "order, and filter it."
+            "names before embedding a corpus."
         ),
         "vgi.keywords": json.dumps(
             [
@@ -151,7 +150,7 @@ _EMBED_CATALOG = Catalog(
             ]
         ),
         "vgi.doc_llm": (
-            "Turn text into fixed-length FLOAT[] embedding vectors entirely in-process "
+            "Turn text into fixed-length `FLOAT[]` embedding vectors entirely in-process "
             "(fastembed/ONNX, no torch, no network call after a one-time model download) "
             "and compare them with cosine similarity. This is the offline, in-database "
             "building block for semantic search, retrieval-augmented generation (RAG), "
@@ -217,9 +216,9 @@ _EMBED_CATALOG = Catalog(
         # embeddings are float-valued (and the analyst may round/rename a raw
         # numeric answer), every task grades on a STABLE reference: a plain
         # BOOLEAN predicate (dimension = N, related > unrelated, retrieval ranks
-        # the relevant passage higher, version string mentions fastembed),
-        # self-similarity ROUNDed to 1.0, or the discovery table's exact rows --
-        # never a bare float/int compare, which the pilot showed is a coin-flip.
+        # the relevant passage higher), self-similarity ROUNDed to 1.0, or the
+        # discovery table's exact rows -- never a bare float/int compare, which
+        # the pilot showed is a coin-flip.
         "vgi.agent_test_tasks": json.dumps(
             [
                 {
@@ -300,16 +299,6 @@ _EMBED_CATALOG = Catalog(
                     ),
                     "ignore_column_names": True,
                 },
-                {
-                    "name": "version_reports_fastembed_backend",
-                    "prompt": (
-                        "Does this worker's version / identity string report that it uses the "
-                        "fastembed backend? Return a single boolean."
-                    ),
-                    "reference_sql": "SELECT embed.main.embed_version() LIKE '%fastembed%'",
-                    "success_criteria": "Returns true; the identity string names the fastembed backend.",
-                    "ignore_column_names": True,
-                },
             ]
         ),
     },
@@ -327,7 +316,6 @@ _EMBED_CATALOG = Catalog(
                         "embed_passage",
                         "similarity",
                         "embedding_dim",
-                        "embed_version",
                         "supported_models",
                         "embeddings",
                         "vector",
@@ -378,8 +366,7 @@ _EMBED_CATALOG = Catalog(
                     "Everything runs in-process via fastembed/ONNX (no torch, no "
                     "network after the one-time model download). Use it to build "
                     "semantic search and RAG pipelines that store and rank vectors "
-                    "with DuckDB VSS, all in SQL. List the schema to see the exact "
-                    "functions and their signatures."
+                    "with DuckDB VSS, all in SQL."
                 ),
                 "vgi.doc_md": (
                     "# embed.main\n\n"
@@ -401,16 +388,44 @@ _EMBED_CATALOG = Catalog(
                     "embedding for text-to-text comparison.\n"
                     "- NULL or empty text yields a NULL vector."
                 ),
-                # VGI506 representative, catalog-qualified example queries for the schema.
-                "vgi.example_queries": (
-                    "SELECT embed.main.embed('hello world');\n"
-                    "SELECT embed.main.embed('hello world', 'BAAI/bge-small-en-v1.5');\n"
-                    "SELECT embed.main.embed_query('how do I reset my password');\n"
-                    "SELECT embed.main.embed_passage('Reset your password in account settings.');\n"
-                    "SELECT embed.main.similarity(embed.main.embed('cat'), embed.main.embed('kitten'));\n"
-                    "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5');\n"
-                    "SELECT embed.main.embed_version();\n"
-                    "SELECT * FROM embed.main.supported_models() ORDER BY model;"
+                # VGI506/VGI515 representative, catalog-qualified described example
+                # queries for the schema. Each projects a stable shape (a length, a
+                # rounded score, or explicit columns) rather than a raw vector or a
+                # bare SELECT *, so the examples read cleanly and satisfy VGI514.
+                "vgi.example_queries": json.dumps(
+                    [
+                        {
+                            "description": "Embed text into a FLOAT[] vector and check its length.",
+                            "sql": "SELECT len(embed.main.embed('hello world')) AS dim",
+                        },
+                        {
+                            "description": "Embed text with an explicitly chosen model.",
+                            "sql": "SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim",
+                        },
+                        {
+                            "description": "Score how related two short texts are (rounded for stable output).",
+                            "sql": (
+                                "SELECT ROUND(embed.main.similarity("
+                                "embed.main.embed('cat'), embed.main.embed('kitten')), 3) AS score"
+                            ),
+                        },
+                        {
+                            "description": "Rank a passage against a search query (asymmetric retrieval).",
+                            "sql": (
+                                "SELECT ROUND(embed.main.similarity("
+                                "embed.main.embed_query('how do I reset my password'), "
+                                "embed.main.embed_passage('Reset your password in account settings.')), 3) AS score"
+                            ),
+                        },
+                        {
+                            "description": "Look up the default model's vector dimension.",
+                            "sql": "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5') AS dim",
+                        },
+                        {
+                            "description": "List the supported models and their dimensions.",
+                            "sql": "SELECT model, dim FROM embed.main.supported_models() ORDER BY model",
+                        },
+                    ]
                 ),
             },
             functions=[*SCALAR_FUNCTIONS, *TABLE_FUNCTIONS],

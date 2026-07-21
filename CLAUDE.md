@@ -19,7 +19,7 @@ embed_worker.py        repo-root stdio entry; PEP 723 inline deps; warms the mod
 serve.py               HTTP entry shim
 vgi_embed/
   models.py            loaded-once-and-cached fastembed lifecycle + warm_up(); pure cosine_similarity; supported-model table
-  scalars.py           7 scalar functions (embed/embed+model arity overload, embed_query/passage, similarity, embedding_dim, embed_version)
+  scalars.py           6 scalar functions (embed/embed+model arity overload, embed_query/passage, similarity, embedding_dim)
   tables.py            supported_models() discovery table function
   schema_utils.py      pa.Field comment helper
 tests/                 pytest: scalars / tables / Client integration (model-gated tests self-skip)

@@ -74,7 +74,6 @@ Other supported models (pass as the second argument to `embed`, or query
 | `embed_passage(text)` | `VARCHAR → FLOAT[]` | embed a **document/passage**; no prefix (by design) |
 | `similarity(a, b)` | `(FLOAT[], FLOAT[]) → DOUBLE` | cosine similarity in `[-1, 1]`; **pure, no model** |
 | `embedding_dim(model)` | `VARCHAR → INT` | vector length for a model name (`''` = default) |
-| `embed_version()` | `→ VARCHAR` | worker + backend + default-model identity |
 
 ### Table function
 

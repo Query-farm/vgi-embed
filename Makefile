@@ -13,9 +13,11 @@
 # fastembed on first use and cached (gitignored). `make models` pre-warms it so
 # the first SQL/unit run isn't paying the download inline.
 
-# Worker stdio command (overridable). The PEP-723 header in embed_worker.py pins
-# fastembed, so `uv run` gives the worker its dependency.
-WORKER_STDIO   ?= uv run --python 3.13 embed_worker.py
+# Worker stdio command (overridable). Drive the worker from the synced project
+# venv (`uv sync --extra http`) so the E2E suite runs against the same pinned
+# vgi-python the linter and tests use, rather than an ephemeral `uv run` env that
+# re-resolves the PEP-723 inline deps.
+WORKER_STDIO   ?= .venv/bin/python embed_worker.py
 
 # haybarn-unittest: the DuckDB sqllogictest runner (uv tool install haybarn-unittest).
 HAYBARN        ?= haybarn-unittest

@@ -134,15 +134,15 @@ jobs:
         run: |
           # Absolute paths: run-integration.sh cd's into a staging dir before
           # invoking the runner, so relative paths would not resolve. The worker
-          # is a repo-root PEP 723 script (no console-script). `--no-sync` makes
-          # `uv run` reuse the already-synced project venv instead of
-          # re-resolving the inline deps, so an absolute script path spawns
-          # correctly regardless of cwd — exactly how DuckDB ATTACH and the
-          # pytest fixture drive it.
+          # is a repo-root PEP 723 script (no console-script). Drive it with the
+          # synced project venv interpreter (`uv sync --frozen --extra http`
+          # created .venv above) so ATTACH spawns the exact pinned vgi-python the
+          # linter and unit tests use, rather than an ephemeral `uv run` env that
+          # re-resolves the inline deps — regardless of cwd.
           UNITTEST="$PWD/$(find hb -name 'haybarn-unittest' -type f | head -1)"
           chmod +x "$UNITTEST"
           echo "HAYBARN_UNITTEST=$UNITTEST" >> "$GITHUB_ENV"
-          echo "VGI_EMBED_WORKER=uv run --no-sync --python 3.13 $PWD/embed_worker.py" >> "$GITHUB_ENV"
+          echo "VGI_EMBED_WORKER=$PWD/.venv/bin/python $PWD/embed_worker.py" >> "$GITHUB_ENV"
 
       - name: Run extension integration suite (${{ matrix.transport }})
         run: ci/run-integration.sh
@@ -174,7 +174,10 @@ jobs:
       - name: vgi-lint
         uses: Query-farm/vgi-lint-check@v1
         with:
-          location: "uv run --no-sync --python 3.13 embed_worker.py"
+          # Lint the worker from the synced project venv, NOT `uv run embed_worker.py`:
+          # the PEP-723 inline-script env re-resolves its own deps and can cache a
+          # stale vgi-python whose older catalog schema trips a false mismatch.
+          location: ".venv/bin/python embed_worker.py"
           fail-on: info
 
   lint:

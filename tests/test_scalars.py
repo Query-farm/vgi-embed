@@ -2,8 +2,8 @@
 
 Split into two tiers:
 
-* **Pure logic** (no model): ``similarity``, ``embedding_dim``, ``embed_version``,
-  and the NULL/empty masking in ``embed``. These always run.
+* **Pure logic** (no model): ``similarity``, ``embedding_dim``, and the
+  NULL/empty masking in ``embed``. These always run.
 * **Model-backed** (``@needs_model``): the actual embeddings. Gated on the
   default fastembed model being loadable, so a bare/offline checkout skips them
   cleanly while a provisioned environment runs them.
@@ -29,7 +29,6 @@ from vgi_embed.scalars import (
     EmbedModel,
     EmbedPassage,
     EmbedQuery,
-    EmbedVersion,
     Similarity,
 )
 
@@ -82,7 +81,7 @@ class TestSimilarity:
         assert out == [None, None, None]
 
 
-# --- embedding_dim / embed_version (no model) -------------------------------
+# --- embedding_dim (no model) -----------------------------------------------
 
 
 class TestMetadata:
@@ -94,11 +93,6 @@ class TestMetadata:
         # Unknown name -> NULL, not a crash.
         out = EmbeddingDim.compute(pa.array(["no/such-model", None])).to_pylist()
         assert out == [None, 384]  # None text falls back to the default model dim
-
-    def test_embed_version_mentions_default_model(self) -> None:
-        v = EmbedVersion.compute().to_pylist()[0]
-        assert "vgi-embed" in v
-        assert models.DEFAULT_MODEL in v
 
 
 # --- embed NULL/empty masking (no model needed for the NULL rows) -----------
