@@ -153,6 +153,9 @@ jobs:
   metadata-quality:
     name: Metadata quality (vgi-lint)
     runs-on: ubuntu-latest
+    env:
+      # uv otherwise picks the newest CPython (3.15), which lacks wheels for native deps.
+      UV_PYTHON: "3.13"
     steps:
       - uses: actions/checkout@v4
 
@@ -184,6 +187,9 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    env:
+      # uv otherwise picks the newest CPython (3.15), which lacks wheels for native deps.
+      UV_PYTHON: "3.13"
     steps:
       - uses: actions/checkout@v4
 
