@@ -1,0 +1,29 @@
+# Private graders for `vgi-lint simulate` (VGI416). The worker publishes only
+# task names and prompts in vgi.agent_test_tasks; these canonical solutions and
+# grading options stay in the repo and are merged by task name.
+tasks:
+  - name: default_model_dimension
+    reference_sql: "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5') = 384 AS is_384"
+    success_criteria: "Returns true; the default model's embedding dimension is 384."
+    ignore_column_names: true
+  - name: list_supported_models
+    reference_sql: "SELECT model FROM embed.main.supported_models() ORDER BY model"
+    success_criteria: "Returns the set of supported model names."
+    ignore_column_names: true
+    unordered: true
+  - name: self_similarity_is_one
+    reference_sql: "SELECT ROUND(embed.main.similarity(embed.main.embed('database'), embed.main.embed('database')), 3) AS sim"
+    success_criteria: "Returns 1.0 (a vector is identical to itself)."
+    ignore_column_names: true
+  - name: related_more_similar_than_unrelated
+    reference_sql: "SELECT embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')) > embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) AS related_more_similar"
+    success_criteria: "Returns true; a related pair scores higher than an unrelated pair."
+    ignore_column_names: true
+  - name: base_model_dimension
+    reference_sql: "SELECT embed.main.embedding_dim('BAAI/bge-base-en-v1.5') = 768 AS is_768"
+    success_criteria: "Returns true; the bge-base model's embedding dimension is 768."
+    ignore_column_names: true
+  - name: retrieval_ranks_relevant_passage_higher
+    reference_sql: "SELECT embed.main.similarity(embed.main.embed_query('how do I reset my password'), embed.main.embed_passage('Reset your password from the account settings page.')) > embed.main.similarity(embed.main.embed_query('how do I reset my password'), embed.main.embed_passage('The weather today is sunny and warm.')) AS relevant_ranks_higher"
+    success_criteria: "Returns true; the query embeds closer to the relevant passage than to the unrelated one."
+    ignore_column_names: true

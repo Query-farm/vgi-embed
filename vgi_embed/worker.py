@@ -209,7 +209,10 @@ _EMBED_CATALOG = Catalog(
         "vgi.support_contact": "https://github.com/Query-farm/vgi-embed/issues",
         "vgi.support_policy_url": "https://github.com/Query-farm/vgi-embed/blob/main/README.md",
         # VGI152/VGI920 -- a fixed analyst-task suite `vgi-lint simulate` runs to
-        # measure how well an agent can actually drive this worker. Because
+        # measure how well an agent can actually drive this worker. Only
+        # {name, prompt} is published here; per VGI416 the grader-only fields
+        # (reference_sql, success_criteria, ...) live in the private
+        # vgi-agent-tests.yaml sidecar at the repo root. Because
         # embeddings are float-valued (and the analyst may round/rename a raw
         # numeric answer), every task grades on a STABLE reference: a plain
         # BOOLEAN predicate (dimension = N, related > unrelated, retrieval ranks
@@ -224,17 +227,10 @@ _EMBED_CATALOG = Catalog(
                         "The default model is BAAI/bge-small-en-v1.5. Does it produce "
                         "384-dimensional embedding vectors? Return a single boolean."
                     ),
-                    "reference_sql": "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5') = 384 AS is_384",
-                    "success_criteria": "Returns true; the default model's embedding dimension is 384.",
-                    "ignore_column_names": True,
                 },
                 {
                     "name": "list_supported_models",
                     "prompt": "List the names of every embedding model this worker supports.",
-                    "reference_sql": "SELECT model FROM embed.main.supported_models() ORDER BY model",
-                    "success_criteria": "Returns the set of supported model names.",
-                    "unordered": True,
-                    "ignore_column_names": True,
                 },
                 {
                     "name": "self_similarity_is_one",
@@ -243,12 +239,6 @@ _EMBED_CATALOG = Catalog(
                         "compute the cosine similarity of the embedding of the word "
                         "'database' with itself, rounded to 3 decimal places."
                     ),
-                    "reference_sql": (
-                        "SELECT ROUND(embed.main.similarity("
-                        "embed.main.embed('database'), embed.main.embed('database')), 3) AS sim"
-                    ),
-                    "success_criteria": "Returns 1.0 (a vector is identical to itself).",
-                    "ignore_column_names": True,
                 },
                 {
                     "name": "related_more_similar_than_unrelated",
@@ -256,13 +246,6 @@ _EMBED_CATALOG = Catalog(
                         "Is the word 'dog' more semantically similar to 'puppy' than to "
                         "'airplane'? Return a single boolean."
                     ),
-                    "reference_sql": (
-                        "SELECT embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')) "
-                        "> embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) "
-                        "AS related_more_similar"
-                    ),
-                    "success_criteria": "Returns true; a related pair scores higher than an unrelated pair.",
-                    "ignore_column_names": True,
                 },
                 {
                     "name": "base_model_dimension",
@@ -270,9 +253,6 @@ _EMBED_CATALOG = Catalog(
                         "Does the model 'BAAI/bge-base-en-v1.5' produce 768-dimensional "
                         "embedding vectors? Return a single boolean."
                     ),
-                    "reference_sql": "SELECT embed.main.embedding_dim('BAAI/bge-base-en-v1.5') = 768 AS is_768",
-                    "success_criteria": "Returns true; the bge-base model's embedding dimension is 768.",
-                    "ignore_column_names": True,
                 },
                 {
                     "name": "retrieval_ranks_relevant_passage_higher",
@@ -282,19 +262,6 @@ _EMBED_CATALOG = Catalog(
                         "password from the account settings page.' than to the passage 'The "
                         "weather today is sunny and warm.'? Return a single boolean."
                     ),
-                    "reference_sql": (
-                        "SELECT embed.main.similarity("
-                        "embed.main.embed_query('how do I reset my password'), "
-                        "embed.main.embed_passage('Reset your password from the account settings page.')) "
-                        "> embed.main.similarity("
-                        "embed.main.embed_query('how do I reset my password'), "
-                        "embed.main.embed_passage('The weather today is sunny and warm.')) "
-                        "AS relevant_ranks_higher"
-                    ),
-                    "success_criteria": (
-                        "Returns true; the query embeds closer to the relevant passage than to the unrelated one."
-                    ),
-                    "ignore_column_names": True,
                 },
             ]
         ),
@@ -302,7 +269,7 @@ _EMBED_CATALOG = Catalog(
     source_url="https://github.com/Query-farm/vgi-embed",
     schemas=[
         Schema(
-            name="main",
+            path=["main"],
             comment="Local text embeddings (fastembed/ONNX) + cosine similarity for SQL",
             tags={
                 "vgi.title": "Embed — main schema",

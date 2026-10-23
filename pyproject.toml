@@ -28,16 +28,16 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "vgi-python[http]>=0.16.0",
+    "vgi-python[http]>=0.46.1",
     "fastembed>=0.3",
     "pyarrow",
 ]
 
 [project.optional-dependencies]
-http = ["vgi-python[http]>=0.16.0"]
+http = ["vgi-python[http]>=0.46.1"]
 # HTTP-serving extra — installed by the Docker image (`.[serve]`). Alias of the
 # `http` extra so the container and the CI integration job stay in lockstep.
-serve = ["vgi-python[http]>=0.16.0"]
+serve = ["vgi-python[http]>=0.46.1"]
 dev = [
     "pytest>=8",
     "ruff>=0.5",

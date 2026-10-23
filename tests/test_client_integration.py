@@ -44,6 +44,7 @@ def test_embed_scalar_end_to_end() -> None:
         results = list(
             client.scalar_function(
                 function_name="embed",
+                schema_path=["main"],
                 input=iter([batch]),
                 arguments=Arguments(positional=[]),
             )
@@ -61,6 +62,7 @@ def test_embed_with_explicit_model_overload_end_to_end() -> None:
         results = list(
             client.scalar_function(
                 function_name="embed",
+                schema_path=["main"],
                 input=iter([batch]),
                 arguments=Arguments(positional=[pa.scalar("BAAI/bge-small-en-v1.5")]),
             )
@@ -75,6 +77,7 @@ def test_similarity_self_is_one_end_to_end() -> None:
         emb = list(
             client.scalar_function(
                 function_name="embed",
+                schema_path=["main"],
                 input=iter([batch]),
                 arguments=Arguments(positional=[]),
             )
@@ -84,6 +87,7 @@ def test_similarity_self_is_one_end_to_end() -> None:
         sim = list(
             client.scalar_function(
                 function_name="similarity",
+                schema_path=["main"],
                 input=iter([sim_batch]),
                 arguments=Arguments(positional=[]),
             )
