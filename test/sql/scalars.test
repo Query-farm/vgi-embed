@@ -14,7 +14,7 @@ statement ok
 LOAD vgi;
 
 statement ok
-ATTACH 'embed' AS embed (TYPE vgi, LOCATION '${VGI_EMBED_WORKER}');
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION '{VGI_EMBED_WORKER}');
 
 # ---- embed(text): fixed-length FLOAT[] vector -------------------------------
 
