@@ -1,6 +1,6 @@
 [project]
 name = "vgi-embed"
-version = "0.2.0"
+version = "0.3.0"
 description = "Local text embeddings (fastembed/ONNX) as VGI DuckDB SQL functions for semantic search / RAG"
 readme = "README.md"
 requires-python = ">=3.13"
