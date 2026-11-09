@@ -165,7 +165,7 @@ uv run --no-sync ruff check . && uv run --no-sync mypy vgi_embed/
 
 `make test-sql` exports `VGI_EMBED_WORKER="uv run --python 3.13 embed_worker.py"`
 and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"` (install once:
-`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is required for the worker's VGI protocol vgi.v3 / 3.1, then put `~/.local/bin` on `PATH`).
+`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is required for the worker's VGI protocol vgi.v3 / 3.2, then put `~/.local/bin` on `PATH`).
 
 ## License
 
