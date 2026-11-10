@@ -19,7 +19,7 @@ and starts fast.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.2.0 vgi-embed-worker');
+ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.3.0 vgi-embed-worker');
 
 -- A 384-dimensional vector.
 SELECT embed.embed('hello world');
@@ -46,7 +46,7 @@ The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.2.0 vgi-embed-worker');
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.3.0 vgi-embed-worker');
 
 -- Embed text into a FLOAT[] vector and check its length.
 SELECT len(embed.main.embed('hello world')) AS dim;
@@ -57,14 +57,14 @@ SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim;
 
 The embedding model downloads on first use and is cached — see [The model](#the-model).
 
-Change `@v0.2.0` to move to a newer release.
+Change `@v0.3.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker and its dependencies):
 
   ```sql
-  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.2.0');
+  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.3.0');
   ```
 
 - **From a local checkout** (`git clone https://github.com/Query-farm/vgi-embed`), point `LOCATION` at `uv run --project /path/to/vgi-embed vgi-embed-worker`.
