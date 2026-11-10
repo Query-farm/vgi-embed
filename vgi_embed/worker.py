@@ -68,7 +68,7 @@ _SUPPORTED_MODELS_VIEW = View(
         "dim": "Embedding dimension (FLOAT[] length) the model produces.",
     },
     tags={
-        "vgi.title": "Supported Models (table)",
+        "vgi.title": "Available Models",
         "vgi.doc_llm": (
             "A ready-to-scan **discovery table** of every `(model, dim)` pair the embed "
             "worker supports, so you can find the valid model names to pass as the second "
@@ -127,7 +127,11 @@ _EMBED_CATALOG = Catalog(
     default_schema="main",
     comment="Local text embeddings (fastembed/ONNX) + cosine similarity for semantic search / RAG.",
     tags={
-        "vgi.title": "Local Text Embeddings & Similarity",
+        "vgi.title": "Text Embeddings",
+        "vgi.subtitle": (
+            "Turn text into embedding vectors on your own machine and rank it by cosine "
+            "similarity for semantic search and RAG."
+        ),
         "vgi.keywords": json.dumps(
             [
                 "embeddings",
@@ -272,7 +276,7 @@ _EMBED_CATALOG = Catalog(
             path=["main"],
             comment="Local text embeddings (fastembed/ONNX) + cosine similarity for SQL",
             tags={
-                "vgi.title": "Embed — main schema",
+                "vgi.title": "Embeddings",
                 "vgi.keywords": json.dumps(
                     [
                         "embed",
