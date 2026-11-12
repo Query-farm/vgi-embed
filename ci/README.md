@@ -15,7 +15,7 @@ extension from the Haybarn community channel:
    is a self-contained PEP 723 stdio worker the extension can spawn via
    `uv run --no-sync --python 3.13 embed_worker.py`.
 2. **Download the runner** — the matching `haybarn_unittest-*` asset per
-   platform from the newest Haybarn 2.0 release (`haybarn-v2.0.*`; the worker speaks VGI protocol vgi.v3 / 3.2, which only the haybarn 2.0 community `vgi` extension accepts).
+   platform from the newest Haybarn 2.0 release (`haybarn-v2.0.*`; the worker speaks VGI protocol vgi.v3 / 3.3, which only the haybarn 2.0 community `vgi` extension accepts).
 3. **Preprocess** — the standalone runner links none of the extensions the
    tests gate on, so [`preprocess-require.awk`](preprocess-require.awk) rewrites
    each `require <ext>` into an explicit signed `INSTALL <ext> FROM
