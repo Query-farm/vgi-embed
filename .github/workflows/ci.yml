@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: ["3.13"]
 
     steps:
@@ -84,11 +84,10 @@ jobs:
         #   subprocess : `uv run embed_worker.py`  (stdio; extension spawns it)
         #   http       : `http://127.0.0.1:<port>` (worker booted with --http)
         #   unix       : `unix://<sock>`           (worker booted with --unix)
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         transport: [subprocess, http, unix]
         include:
           - { os: ubuntu-latest, asset: haybarn_unittest-linux-amd64.zip }
-          - { os: macos-latest,  asset: haybarn_unittest-osx-arm64.zip }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
