@@ -19,7 +19,7 @@ and starts fast.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.4.0 vgi-embed-worker');
+ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker');
 
 -- A 384-dimensional vector.
 SELECT embed.embed('hello world');
@@ -46,7 +46,7 @@ The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.4.0 vgi-embed-worker');
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker');
 
 -- Embed text into a FLOAT[] vector and check its length.
 SELECT len(embed.main.embed('hello world')) AS dim;
@@ -57,14 +57,14 @@ SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim;
 
 The embedding model downloads on first use and is cached — see [The model](#the-model).
 
-Change `@v0.4.0` to move to a newer release.
+Change `@v0.5.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker and its dependencies):
 
   ```sql
-  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.4.0');
+  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.5.0');
   ```
 
 - **From a local checkout** (`git clone https://github.com/Query-farm/vgi-embed`), point `LOCATION` at `uv run --project /path/to/vgi-embed vgi-embed-worker`.
@@ -87,7 +87,33 @@ on disk; later runs load it locally. The cache directory is gitignored. Override
 it with `VGI_EMBED_CACHE_DIR` (or fastembed's own `FASTEMBED_CACHE_PATH`).
 Pre-warm it once with `make models`.
 
-Other supported models (pass as the second argument to `embed`, or query
+Choose a model with the second positional argument to `embed`, `embed_query`, or
+`embed_passage`. Use the **same model for queries and documents**; matching vector
+dimensions alone does not make different models compatible.
+
+```sql
+SELECT embed.similarity(
+    embed.embed_query('reset password', 'BAAI/bge-base-en-v1.5'),
+    embed.embed_passage('Click forgot password to reset it.', 'BAAI/bge-base-en-v1.5')
+);
+```
+
+Set `VGI_EMBED_DEFAULT_MODEL` in the worker's environment before startup to change
+the shared default for all three functions, `embedding_dim('')`, and model
+warm-up. For example:
+
+```sh
+VGI_EMBED_DEFAULT_MODEL=BAAI/bge-base-en-v1.5 uv run vgi-embed-worker
+```
+
+Explicit model arguments override this setting. Omitting the argument or passing
+an empty/whitespace-only model name uses the configured default. An unset or blank
+environment variable retains `BAAI/bge-small-en-v1.5`; an unsupported default
+produces an error at worker startup. Restart the worker after changing this setting.
+Stored vectors and query vectors must still use the same model; re-embed existing
+data when switching models.
+
+Supported models (pass as the second argument to any embedding function, or query
 `supported_models()`):
 
 | model | dim | license |
@@ -106,7 +132,9 @@ Other supported models (pass as the second argument to `embed`, or query
 | `embed(text)` | `VARCHAR → FLOAT[]` | sentence embedding, default model |
 | `embed(text, model)` | `(VARCHAR, VARCHAR) → FLOAT[]` | explicit model (arity overload) |
 | `embed_query(text)` | `VARCHAR → FLOAT[]` | embed a **search query**; applies the model's query instruction prefix |
+| `embed_query(text, model)` | `(VARCHAR, VARCHAR) → FLOAT[]` | explicit model and its query instruction prefix |
 | `embed_passage(text)` | `VARCHAR → FLOAT[]` | embed a **document/passage**; no prefix (by design) |
+| `embed_passage(text, model)` | `(VARCHAR, VARCHAR) → FLOAT[]` | explicit model; no query prefix |
 | `similarity(a, b)` | `(FLOAT[], FLOAT[]) → DOUBLE` | cosine similarity in `[-1, 1]`; **pure, no model** |
 | `embedding_dim(model)` | `VARCHAR → INT` | vector length for a model name (`''` = default) |
 
@@ -116,7 +144,7 @@ Other supported models (pass as the second argument to `embed`, or query
 |---|---|
 | `supported_models()` | `(model VARCHAR, dim INT)` |
 
-`embed` exposes its optional `model` via an **arity overload** because VGI scalar
+All three embedding functions expose their optional `model` via an **arity overload** because VGI scalar
 functions are positional-only (`name := value` is a table-function feature).
 
 ### Query vs. passage (retrieval asymmetry)

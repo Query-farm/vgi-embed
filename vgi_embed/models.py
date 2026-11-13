@@ -15,6 +15,8 @@ install and fast to start once the model is cached.
 
 Default model
 -------------
+Set ``VGI_EMBED_DEFAULT_MODEL`` before worker startup to select a supported model.
+When unset or blank, the default remains:
 ``BAAI/bge-small-en-v1.5`` -- 384-dim, **MIT licensed**, strong general-purpose
 English retrieval/semantic-search embeddings. Downloaded on first use to the
 fastembed cache dir (``~/.cache/...`` by default, or ``VGI_EMBED_CACHE_DIR`` /
@@ -66,7 +68,8 @@ _SUPPORTED_MODELS: dict[str, tuple[int, str]] = {
     "sentence-transformers/all-MiniLM-L6-v2": (384, ""),
 }
 
-DEFAULT_MODEL = "BAAI/bge-small-en-v1.5"
+# Read once at worker startup so runtime selection and catalog metadata agree.
+DEFAULT_MODEL = os.environ.get("VGI_EMBED_DEFAULT_MODEL", "").strip() or "BAAI/bge-small-en-v1.5"
 
 _CACHE_DIR_ENV = "VGI_EMBED_CACHE_DIR"
 
@@ -222,5 +225,5 @@ def warm_up() -> None:
     """
     with contextlib.suppress(Exception):
         # Touch the embedder so the ONNX session is built and cached now.
-        embedder = _load_model(DEFAULT_MODEL)
+        embedder = get_model(None)
         next(iter(embedder.embed(["warm up"])), None)

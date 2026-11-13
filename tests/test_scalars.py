@@ -17,7 +17,9 @@ build.
 from __future__ import annotations
 
 import math
+from unittest.mock import patch
 
+import numpy as np
 import pyarrow as pa
 import pytest
 
@@ -28,7 +30,9 @@ from vgi_embed.scalars import (
     EmbeddingDim,
     EmbedModel,
     EmbedPassage,
+    EmbedPassageModel,
     EmbedQuery,
+    EmbedQueryModel,
     Similarity,
 )
 
@@ -99,11 +103,50 @@ class TestMetadata:
 
 
 class TestEmbedNullMasking:
-    def test_all_null_and_empty_rows_are_null_without_loading_model(self) -> None:
+    @pytest.mark.parametrize("scalar", [Embed, EmbedQuery, EmbedPassage])
+    def test_all_null_and_empty_rows_are_null_without_loading_model(self, scalar: type) -> None:
         # Every row is NULL/empty/whitespace -> all-NULL output, and the model is
         # never invoked (so this runs even with no model installed).
-        out = Embed.compute(pa.array([None, "", "   "])).to_pylist()
-        assert out == [None, None, None]
+        with patch.object(models, "_load_model", side_effect=AssertionError("unexpected model load")):
+            assert scalar.compute(pa.array([None, "", "   "])).to_pylist() == [None, None, None]
+
+    @pytest.mark.parametrize("scalar", [EmbedModel, EmbedQueryModel, EmbedPassageModel])
+    def test_explicit_model_empty_batch_does_not_load(self, scalar: type) -> None:
+        with patch.object(models, "_load_model", side_effect=AssertionError("unexpected model load")):
+            out = scalar.compute(pa.array([None, "", "   "]), "BAAI/bge-base-en-v1.5")
+        assert out.to_pylist() == [None, None, None]
+
+
+class TestModelSelection:
+    @pytest.mark.parametrize("scalar", [EmbedModel, EmbedQueryModel, EmbedPassageModel])
+    @pytest.mark.parametrize("model", ["BAAI/bge-base-en-v1.5", "sentence-transformers/all-MiniLM-L6-v2", "", "  "])
+    def test_selected_model_controls_prefix_and_preserves_nulls(self, scalar: type, model: str) -> None:
+        expected_model = models.resolve_model(model)
+        prefix = models.query_prefix(model) if scalar is EmbedQueryModel else ""
+        with patch.object(models, "_load_model") as load:
+            load.return_value.embed.return_value = [np.array([1.0, 2.0]), np.array([3.0, 4.0])]
+            out = scalar.compute(pa.array(["query", None, "", "  ", "passage"]), model)
+        load.assert_called_once_with(expected_model)
+        load.return_value.embed.assert_called_once_with([prefix + "query", prefix + "passage"])
+        assert out.to_pylist() == [[1.0, 2.0], None, None, None, [3.0, 4.0]]
+
+    @pytest.mark.parametrize("scalar", [Embed, EmbedQuery, EmbedPassage])
+    def test_one_argument_uses_shared_default(self, monkeypatch: pytest.MonkeyPatch, scalar: type) -> None:
+        monkeypatch.setattr(models, "DEFAULT_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        with patch.object(models, "_load_model") as load:
+            load.return_value.embed.return_value = [np.array([1.0, 2.0])]
+            scalar.compute(pa.array(["query"]))
+        load.assert_called_once_with(models.DEFAULT_MODEL)
+        load.return_value.embed.assert_called_once_with(["query"])
+
+    @pytest.mark.parametrize("scalar", [EmbedModel, EmbedQueryModel, EmbedPassageModel])
+    def test_unknown_model_raises_before_loading(self, scalar: type) -> None:
+        with (
+            patch.object(models, "_load_model") as load,
+            pytest.raises(models.ModelNotAvailableError, match="Unknown embedding model"),
+        ):
+            scalar.compute(pa.array(["hello"]), "no/such-model")
+        load.assert_not_called()
 
 
 # --- model-backed embeddings (gated) ----------------------------------------

@@ -30,7 +30,8 @@ def _client() -> Client:
     # Launch the worker with the same interpreter running the tests so it sees the
     # installed deps (rather than going through `uv run`). Client wants a
     # shell-style command string.
-    return Client(f"{shlex.quote(sys.executable)} {shlex.quote(_WORKER)}")
+    # Startup configuration must not reuse a worker from another test's environment.
+    return Client(f"{shlex.quote(sys.executable)} {shlex.quote(_WORKER)}", pool=None)
 
 
 @needs_model
@@ -93,3 +94,38 @@ def test_similarity_self_is_one_end_to_end() -> None:
             )
         )
     assert math.isclose(sim[0]["result"].to_pylist()[0], 1.0, abs_tol=1e-5)
+
+
+@needs_model
+@pytest.mark.parametrize("configured_default", [False, True])
+def test_retrieval_model_selection_end_to_end(monkeypatch: pytest.MonkeyPatch, configured_default: bool) -> None:
+    model = "BAAI/bge-base-en-v1.5"
+    if configured_default:
+        monkeypatch.setenv("VGI_EMBED_DEFAULT_MODEL", model)
+    batch = pa.RecordBatch.from_pydict({"text": ["reset password", None, "  "]})
+    vectors = {}
+    with _client() as client:
+        for name in ["embed", "embed_query", "embed_passage"]:
+            result = list(
+                client.scalar_function(
+                    function_name=name,
+                    schema_path=["main"],
+                    input=iter([batch]),
+                    arguments=Arguments(positional=[] if configured_default else [pa.scalar(model)]),
+                )
+            )[0]["result"].to_pylist()
+            assert len(result[0]) == 768
+            assert result[1:] == [None, None]
+            vectors[name] = result[0]
+        if configured_default:
+            result = list(
+                client.scalar_function(
+                    function_name="embed_query",
+                    schema_path=["main"],
+                    input=iter([batch]),
+                    arguments=Arguments(positional=[pa.scalar("BAAI/bge-small-en-v1.5")]),
+                )
+            )[0]["result"].to_pylist()
+            assert len(result[0]) == 384
+    assert vectors["embed_query"] != vectors["embed_passage"]
+    assert vectors["embed"] == vectors["embed_passage"]

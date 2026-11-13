@@ -114,7 +114,7 @@ _SUPPORTED_MODELS_VIEW = View(
                 },
                 {
                     "description": "Dimension of the default model.",
-                    "sql": "SELECT dim FROM embed.main.supported_models WHERE model = 'BAAI/bge-small-en-v1.5'",
+                    "sql": f"SELECT dim FROM embed.main.supported_models WHERE model = '{models.DEFAULT_MODEL}'",
                 },
             ]
         ),
@@ -183,10 +183,11 @@ _EMBED_CATALOG = Catalog(
             "Under the hood it is powered by [fastembed](https://github.com/qdrant/fastembed) "
             "from [Qdrant](https://qdrant.tech) (Apache-2.0), which runs quantized "
             "sentence-transformer models through [ONNX Runtime](https://onnxruntime.ai) "
-            "([source](https://github.com/microsoft/onnxruntime)). The default model is "
-            "[`BAAI/bge-small-en-v1.5`](https://huggingface.co/BAAI/bge-small-en-v1.5) "
-            "(384-dimensional, MIT licensed), downloaded on first use and cached "
-            "locally; larger `bge` models and `all-MiniLM-L6-v2` are also supported. "
+            "([source](https://github.com/microsoft/onnxruntime)). The configured default model is "
+            f"`{models.DEFAULT_MODEL}` ({models.embedding_dim(None)}-dimensional), downloaded on first use and cached "
+            "locally. Set `VGI_EMBED_DEFAULT_MODEL` before startup to change it, or pass "
+            "a model as the second argument to each embedding function. "
+            "Use the same model for queries and documents. "
             "Vectors are returned over Apache Arrow as native DuckDB `FLOAT[]` lists, "
             "ready to index and rank with the "
             "[DuckDB VSS extension](https://duckdb.org/docs/extensions/vss.html).\n\n"
@@ -228,8 +229,8 @@ _EMBED_CATALOG = Catalog(
                 {
                     "name": "default_model_dimension",
                     "prompt": (
-                        "The default model is BAAI/bge-small-en-v1.5. Does it produce "
-                        "384-dimensional embedding vectors? Return a single boolean."
+                        f"The default model is {models.DEFAULT_MODEL}. Does it produce "
+                        f"{models.embedding_dim(None)}-dimensional embedding vectors? Return a single boolean."
                     ),
                 },
                 {
@@ -346,7 +347,9 @@ _EMBED_CATALOG = Catalog(
                     "This schema holds the worker's scalar embedding and similarity "
                     "helpers plus a model-discovery table. Embeddings are generated "
                     "locally with fastembed on ONNX Runtime; the default model is "
-                    "`BAAI/bge-small-en-v1.5` (384-dim). Symmetric embedding is for "
+                    f"`{models.DEFAULT_MODEL}` ({models.embedding_dim(None)}-dim). "
+                    "All three embedding functions accept a model as their second positional argument; "
+                    "`VGI_EMBED_DEFAULT_MODEL` sets the shared default before startup. Symmetric embedding is for "
                     "text-to-text comparison; the query/passage pair is for asymmetric "
                     "retrieval.\n\n"
                     "## Usage\n\n"

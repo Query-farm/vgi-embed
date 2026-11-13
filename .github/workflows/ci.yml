@@ -43,7 +43,7 @@ jobs:
       # Pre-warm the fastembed cache so the model download happens once, here,
       # rather than inline during the first test (and so the model-gated tests run).
       - name: Warm the embedding model cache
-        run: uv run --no-sync python -c "from vgi_embed import models; models.warm_up()"
+        run: uv run --no-sync python -c "from vgi_embed import models; models.get_model(None); models.get_model('BAAI/bge-base-en-v1.5')"
 
       - name: Run tests
         run: uv run --no-sync pytest
@@ -122,10 +122,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.fastembed_cache
-          key: fastembed-${{ runner.os }}-bge-small-en-v1.5
+          key: fastembed-${{ runner.os }}-bge-small-and-base-en-v1.5
 
       - name: Warm the embedding model cache
-        run: uv run --no-sync python -c "from vgi_embed import models; models.warm_up()"
+        run: uv run --no-sync python -c "from vgi_embed import models; models.get_model(None); models.get_model('BAAI/bge-base-en-v1.5')"
 
       - name: Download haybarn-unittest
         run: |

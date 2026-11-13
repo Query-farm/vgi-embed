@@ -19,7 +19,7 @@ embed_worker.py        repo-root stdio entry; PEP 723 inline deps; warms the mod
 serve.py               HTTP entry shim
 vgi_embed/
   models.py            loaded-once-and-cached fastembed lifecycle + warm_up(); pure cosine_similarity; supported-model table
-  scalars.py           6 scalar functions (embed/embed+model arity overload, embed_query/passage, similarity, embedding_dim)
+  scalars.py           8 scalar overloads (embed/query/passage with optional model, similarity, embedding_dim)
   tables.py            supported_models() discovery table function
   schema_utils.py      pa.Field comment helper
 tests/                 pytest: scalars / tables / Client integration (model-gated tests self-skip)
@@ -30,7 +30,7 @@ Makefile               test / test-unit / test-sql / models / lint / typecheck
 ## Core conventions (read first)
 
 - **Scalars are positional-only** (no `name := value`). `embed`'s optional
-  `model` is therefore a second **arity overload** (`embed(text)` /
+  `model` (also on `embed_query` and `embed_passage`) is therefore a second **arity overload** (`embed(text)` /
   `embed(text, model)`) sharing one name — same idiom as vgi-nlp's `lemmatize`.
 - **`FLOAT[]` returns need an explicit return type.** The embedding scalars
   declare `Returns(arrow_type=pa.list_(pa.float32()))`; `similarity` declares
@@ -44,6 +44,9 @@ Makefile               test / test-unit / test-sql / models / lint / typecheck
   all-empty input batch never loads the model at all.
 
 ## Sharp edges
+
+`VGI_EMBED_DEFAULT_MODEL` selects the shared default once at worker startup.
+Explicit model arguments override it; metadata and warm-up use the same default.
 
 1. **Expensive init: load the model ONCE.** `models._load_model` is
    `@lru_cache`'d and guarded by a lock; the whole point is that VGI keeps the

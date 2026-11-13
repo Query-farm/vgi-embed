@@ -14,7 +14,7 @@ A note on argument syntax
 -------------------------
 VGI / DuckDB *scalar* functions take **positional** arguments and resolve
 overloads by *arity* -- the ``name := value`` named-argument syntax is a property
-of table functions and macros, not scalars. So ``embed`` exposes its optional
+of table functions and macros, not scalars. Each embedding function exposes its optional
 ``model`` argument as a second arity overload sharing the one name:
 
     SELECT embed.embed(body)                          FROM docs;  -- default model
@@ -75,7 +75,7 @@ def _eq(pairs: list[tuple[str, str]]) -> str:
 _EMBED_EXAMPLES = [
     (
         "SELECT len(embed.main.embed('hello world')) AS dim",
-        "Embed a string into a 384-dim `FLOAT[]` with the default model.",
+        f"Embed a string into a {models.embedding_dim(None)}-dim `FLOAT[]` with the default model.",
     ),
     (
         "SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim",
@@ -87,11 +87,20 @@ _EMBED_QUERY_EXAMPLES = [
         "SELECT len(embed.main.embed_query('how do I reset my password')) AS dim",
         "Embed a search query with the query-side instruction prefix.",
     ),
+    (
+        "SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim",
+        "Embed a search query with an explicitly chosen model (768-dim `bge-base`).",
+    ),
 ]
 _EMBED_PASSAGE_EXAMPLES = [
     (
         "SELECT len(embed.main.embed_passage('Reset your password from the account settings page.')) AS dim",
-        "Embed a corpus passage (no query prefix) into a 384-dim `FLOAT[]`.",
+        "Embed a corpus passage with the default model and no query prefix.",
+    ),
+    (
+        "SELECT len(embed.main.embed_passage('Reset your password in account settings.', "
+        "'BAAI/bge-base-en-v1.5')) AS dim",
+        "Embed a corpus passage with the same explicitly chosen model as the query.",
     ),
 ]
 _SIMILARITY_EXAMPLES = [
@@ -115,18 +124,18 @@ _EMBEDDING_DIM_EXAMPLES = [
 # VGI509: at least one guaranteed-runnable, VERIFIED example (with expected_result)
 # so an agent has a reference it can execute and check. Both assertions are
 # deterministic across ONNX builds: a model's dimension is fixed, and the default
-# model always yields a 384-length vector -- neither depends on exact float values.
+# model's dimension is resolved at startup -- neither depends on exact float values.
 _VERIFIED_EXAMPLES = json.dumps(
     [
         {
-            "description": "The default model produces 384-dimensional vectors.",
-            "sql": "SELECT embed.main.embedding_dim('BAAI/bge-small-en-v1.5') AS dim",
-            "expected_result": [{"dim": 384}],
+            "description": "Look up the configured default model's vector dimension.",
+            "sql": "SELECT embed.main.embedding_dim('') AS dim",
+            "expected_result": [{"dim": models.embedding_dim(None)}],
         },
         {
-            "description": "embed() returns a 384-length FLOAT[] for the default model.",
+            "description": "embed() returns a FLOAT[] with the default model's dimension.",
             "sql": "SELECT len(embed.main.embed('hello world')) AS dim",
-            "expected_result": [{"dim": 384}],
+            "expected_result": [{"dim": models.embedding_dim(None)}],
         },
     ]
 )
@@ -154,8 +163,6 @@ def _embed_array(
 
     vectors: list[list[float] | None] = [None] * len(values)
     if live_text:
-        # For the query overloads the prefix may be model-specific; resolve it
-        # from the model when not supplied explicitly.
         embedded = models.embed_texts(live_text, model=model, prefix=prefix)
         for i, vec in zip(live_idx, embedded, strict=False):
             vectors[i] = vec
@@ -189,7 +196,7 @@ class Embed(ScalarFunction):
                     f"embedding vector using the default model (`{models.DEFAULT_MODEL}`, "
                     f"{models.embedding_dim(None)}-dim). Runs entirely in-process via "
                     "fastembed/ONNX -- no torch, no network call after the one-time model "
-                    "download.\n\n"
+                    "download. Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the shared default.\n\n"
                     "**When to use.** Use this for *symmetric* embeddings where the two "
                     "sides being compared are the same kind of text (e.g. sentence-to-"
                     "sentence dedup, clustering, classification). For retrieval where a "
@@ -338,8 +345,8 @@ class EmbedQuery(ScalarFunction):
             **meta.object_tags(
                 title="Embed Retrieval Query",
                 description_llm=(
-                    "## embed_query(text)\n\n"
-                    "Embed a *search query* for retrieval, applying the default model's "
+                    "## embed_query(text [, model])\n\n"
+                    "Embed a *search query* for retrieval, applying the selected model's "
                     "recommended query instruction prefix (for bge: "
                     "`Represent this sentence for searching relevant passages: `). This is "
                     "the query side of asymmetric retrieval.\n\n"
@@ -348,13 +355,17 @@ class EmbedQuery(ScalarFunction):
                     "`similarity(embed_query(q), embed_passage(doc))`. The prefix nudges "
                     "the query vector toward the passages that answer it, improving recall "
                     "over a plain symmetric `embed`.\n\n"
-                    "**Input/output.** Input: one `VARCHAR` query per row. Output: one "
-                    "`FLOAT[]` per row (NULL/empty -> NULL), same dimension as `embed`.\n\n"
-                    "**Edge cases.** Pair only with `embed_passage` (not `embed`) so query "
-                    "and passage live in the same trained retrieval space."
+                    "**Input/output.** Input: one `VARCHAR` query per row and an optional "
+                    "constant `VARCHAR` model as the second positional argument. Output: "
+                    "one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. "
+                    f"Omitting the model or passing an empty string uses `{models.DEFAULT_MODEL}`. "
+                    "Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default.\n\n"
+                    "**Edge cases.** Use the same model for queries and passages; matching "
+                    "dimensions alone do not make embeddings compatible. Models without a "
+                    "query instruction prefix embed queries as-is."
                 ),
                 description_md=(
-                    "# embed_query(text)\n\n"
+                    "# embed_query(text [, model])\n\n"
                     "Embed a search query for retrieval, applying the model's query "
                     "instruction prefix (the query side of asymmetric retrieval).\n\n"
                     "## Usage\n\n"
@@ -363,7 +374,8 @@ class EmbedQuery(ScalarFunction):
                     "`similarity(embed_passage(body), embed_query(q))` descending. Runnable, "
                     "catalog-qualified retrieval examples are attached as example queries.\n\n"
                     "## Notes\n\n"
-                    "- Pair with `embed_passage` for the documents, not plain `embed`.\n"
+                    "- Pass the same model as the second positional argument to both retrieval functions.\n"
+                    f"- Default: `{models.DEFAULT_MODEL}`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n"
                     "- NULL or empty input returns NULL."
                 ),
                 keywords=[
@@ -392,6 +404,31 @@ class EmbedQuery(ScalarFunction):
         return _embed_array(text, model=None, prefix=models.query_prefix(None))
 
 
+class EmbedQueryModel(ScalarFunction):
+    """``embed_query(text, model)`` -- embed a query with the selected model's prefix."""
+
+    class Meta:
+        """Metadata shared with the one-argument query overload."""
+
+        name = "embed_query"
+        description = (
+            "Embed a search query with an explicit model and its query instruction prefix. NULL/empty -> NULL."
+        )
+        categories = EmbedQuery.Meta.categories
+        examples = _fx(_EMBED_QUERY_EXAMPLES)
+        tags = EmbedQuery.Meta.tags
+
+    @classmethod
+    def compute(
+        cls,
+        text: Annotated[pa.StringArray, Param(doc="Search query to embed")],
+        model: Annotated[str, ConstParam(doc="Model name; see supported_models()")],
+    ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed a query with the selected model and its instruction prefix."""
+        name = models.resolve_model(model)
+        return _embed_array(text, model=name, prefix=models.query_prefix(name))
+
+
 class EmbedPassage(ScalarFunction):
     """``embed_passage(text)`` -- embed a *document/passage* (no prefix, by design)."""
 
@@ -410,7 +447,7 @@ class EmbedPassage(ScalarFunction):
             **meta.object_tags(
                 title="Embed Document Passage",
                 description_llm=(
-                    "## embed_passage(text)\n\n"
+                    "## embed_passage(text [, model])\n\n"
                     "Embed a *document/passage* for retrieval. For bge-style retrieval "
                     "models, passages get **no** instruction prefix (only queries do), and "
                     "this function mirrors that convention exactly.\n\n"
@@ -418,14 +455,18 @@ class EmbedPassage(ScalarFunction):
                     "retrieval and `embed_query` for the user query, then rank with "
                     "`similarity(embed_query(q), embed_passage(doc))`. Pre-compute passage "
                     "vectors once and store them (e.g. in a DuckDB VSS HNSW index).\n\n"
-                    "**Input/output.** Input: one `VARCHAR` passage per row. Output: one "
-                    "`FLOAT[]` per row (NULL/empty -> NULL), same dimension as `embed`.\n\n"
+                    "**Input/output.** Input: one `VARCHAR` passage per row and an optional "
+                    "constant `VARCHAR` model as the second positional argument. Output: "
+                    "one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. "
+                    f"Omitting the model or passing an empty string uses `{models.DEFAULT_MODEL}`. "
+                    "Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default. "
+                    "Use the same model for queries and passages.\n\n"
                     "**Edge cases.** Numerically this equals plain `embed` for bge (passages "
                     "have no prefix); it exists as a named counterpart to `embed_query` so "
                     "retrieval pipelines read symmetrically."
                 ),
                 description_md=(
-                    "# embed_passage(text)\n\n"
+                    "# embed_passage(text [, model])\n\n"
                     "Embed a document/passage for retrieval (the corpus side of asymmetric "
                     "retrieval -- no query prefix).\n\n"
                     "## Usage\n\n"
@@ -434,7 +475,8 @@ class EmbedPassage(ScalarFunction):
                     "query time score them against `embed_query(q)`. Runnable, catalog-qualified "
                     "examples are attached as example queries.\n\n"
                     "## Notes\n\n"
-                    "- Pair with `embed_query` for the query side.\n"
+                    "- Pair with `embed_query` using the same model as the second positional argument.\n"
+                    f"- Default: `{models.DEFAULT_MODEL}`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n"
                     "- For bge, passages get no instruction prefix (by design).\n"
                     "- NULL or empty input returns NULL."
                 ),
@@ -462,6 +504,28 @@ class EmbedPassage(ScalarFunction):
     ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
         """Embed a passage/document with no query prefix."""
         return _embed_array(text, model=None)
+
+
+class EmbedPassageModel(ScalarFunction):
+    """``embed_passage(text, model)`` -- embed a passage with an explicit model."""
+
+    class Meta:
+        """Metadata shared with the one-argument passage overload."""
+
+        name = "embed_passage"
+        description = "Embed a document/passage with an explicit model and no query prefix. NULL/empty -> NULL."
+        categories = EmbedPassage.Meta.categories
+        examples = _fx(_EMBED_PASSAGE_EXAMPLES)
+        tags = EmbedPassage.Meta.tags
+
+    @classmethod
+    def compute(
+        cls,
+        text: Annotated[pa.StringArray, Param(doc="Passage/document text to embed")],
+        model: Annotated[str, ConstParam(doc="Model name; see supported_models()")],
+    ) -> Annotated[pa.ListArray, Returns(arrow_type=_VECTOR)]:
+        """Embed a passage with the selected model and no query prefix."""
+        return _embed_array(text, model=model or None)
 
 
 # ===========================================================================
@@ -626,7 +690,9 @@ SCALAR_FUNCTIONS: list[type] = [
     Embed,
     EmbedModel,
     EmbedQuery,
+    EmbedQueryModel,
     EmbedPassage,
+    EmbedPassageModel,
     Similarity,
     EmbeddingDim,
 ]

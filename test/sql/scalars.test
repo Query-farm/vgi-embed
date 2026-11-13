@@ -98,6 +98,52 @@ SELECT embed.similarity(embed.embed_query('reset password'),
 ----
 true
 
+# ---- explicit retrieval models ---------------------------------------------
+
+# Explicit retrieval models use the selected width and query prefix.
+query II
+SELECT len(embed.embed_query('reset password', 'BAAI/bge-base-en-v1.5')),
+       len(embed.embed_passage('reset password', 'BAAI/bge-base-en-v1.5'));
+----
+768	768
+
+query I
+SELECT ROUND(embed.similarity(
+    embed.embed_query('reset password', 'BAAI/bge-base-en-v1.5'),
+    embed.embed('Represent this sentence for searching relevant passages: reset password',
+                'BAAI/bge-base-en-v1.5')), 6) = 1.0;
+----
+true
+
+query I
+SELECT ROUND(embed.similarity(
+    embed.embed_passage('reset password', 'BAAI/bge-base-en-v1.5'),
+    embed.embed('reset password', 'BAAI/bge-base-en-v1.5')), 6) = 1.0;
+----
+true
+
+query II
+SELECT len(embed.embed_query('reset password', '')),
+       len(embed.embed_passage('reset password', '  '));
+----
+384	384
+
+query II
+SELECT embed.embed_query(NULL, 'BAAI/bge-base-en-v1.5') IS NULL,
+       embed.embed_passage('  ', 'BAAI/bge-base-en-v1.5') IS NULL;
+----
+true	true
+
+statement error
+SELECT embed.embed_query('hello', 'no/such-model');
+----
+Unknown embedding model
+
+statement error
+SELECT embed.embed_passage('hello', 'no/such-model');
+----
+Unknown embedding model
+
 # ---- embedding_dim ---------------------------------------------------------
 
 query I

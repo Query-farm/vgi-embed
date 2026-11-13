@@ -52,7 +52,7 @@ _SUPPORTED_MODELS_EXAMPLES: list[tuple[str, str]] = [
         "List the supported embedding models and their dimensions.",
     ),
     (
-        "SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'",
+        f"SELECT dim FROM embed.main.supported_models() WHERE model = '{models.DEFAULT_MODEL}'",
         "Dimension of the default model.",
     ),
 ]
