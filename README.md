@@ -220,3 +220,7 @@ Written by [Query.Farm](https://query.farm).
 
 Copyright 2026 Query Farm LLC - https://query.farm
 
+
+## Executed notebooks
+
+Explore [retrieval depth, cosine checks and precision/recall](notebooks/README.md) with the released worker.
