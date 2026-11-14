@@ -38,7 +38,7 @@ pytest:
 	uv run --no-sync pytest -q
 
 # End-to-end SQL: run the haybarn glob with the worker command exported.
-# `uv run embed_worker.py` resolves fastembed from the script's pinned deps.
+# The worker runs from the synced project venv (WORKER_STDIO above).
 test-sql:
 	@command -v $(HAYBARN) >/dev/null 2>&1 || { \
 		echo "ERROR: $(HAYBARN) not found. Install it with:" >&2; \
