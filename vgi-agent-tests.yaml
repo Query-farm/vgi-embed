@@ -27,3 +27,12 @@ tasks:
     reference_sql: "SELECT embed.main.similarity(embed.main.embed_query('how do I reset my password'), embed.main.embed_passage('Reset your password from the account settings page.')) > embed.main.similarity(embed.main.embed_query('how do I reset my password'), embed.main.embed_passage('The weather today is sunny and warm.')) AS relevant_ranks_higher"
     success_criteria: "Returns true; the query embeds closer to the relevant passage than to the unrelated one."
     ignore_column_names: true
+  - name: semantic_search_best_passage
+    reference_sql: "SELECT body FROM (VALUES ('Water boils at 100 degrees Celsius at sea level.'), ('The Eiffel Tower is located in Paris, France.'), ('Python is a popular programming language.'), ('Mount Everest is the tallest mountain on Earth.')) AS d(body) ORDER BY embed.main.similarity(embed.main.embed_query('where is the eiffel tower'), embed.main.embed_passage(body)) DESC LIMIT 1"
+    success_criteria: "Returns the single passage 'The Eiffel Tower is located in Paris, France.' (it outscores the runner-up by ~0.36 cosine)."
+    ignore_column_names: true
+  - name: zero_shot_ticket_labels
+    reference_sql: "SELECT t.ticket, arg_max(l.label, embed.main.similarity(embed.main.embed(t.ticket), embed.main.embed(l.label))) AS label FROM (VALUES ('My package never arrived and tracking has not updated in a week.'), ('The checkout page shows an error when I enter my card.'), ('Please let me export my reports as CSV.')) AS t(ticket) CROSS JOIN (VALUES ('shipping delay'), ('payment error'), ('feature request')) AS l(label) GROUP BY t.ticket ORDER BY t.ticket"
+    success_criteria: "Returns three (ticket, label) rows: the package ticket -> 'shipping delay', the checkout/card ticket -> 'payment error', the CSV export ticket -> 'feature request'."
+    ignore_column_names: true
+    unordered: true

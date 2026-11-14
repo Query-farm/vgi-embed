@@ -53,6 +53,17 @@ SELECT len(embed.main.embed('hello world')) AS dim;
 
 -- Embed text with an explicitly chosen model.
 SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim;
+
+-- Zero-shot classification: label each ticket with its most similar category.
+WITH tickets(ticket) AS (VALUES
+    ('The app crashes every time I open the settings screen.'),
+    ('I was charged twice for my subscription this month.'),
+    ('Could you add a dark mode option?')),
+labels(label) AS (VALUES ('bug report'), ('billing problem'), ('feature request'))
+SELECT t.ticket,
+       arg_max(l.label, embed.main.similarity(embed.main.embed(t.ticket), embed.main.embed(l.label))) AS label
+FROM tickets AS t CROSS JOIN labels AS l
+GROUP BY t.ticket ORDER BY t.ticket;
 ```
 
 The embedding model downloads on first use and is cached — see [The model](#the-model).
@@ -191,7 +202,7 @@ make test                    # both
 uv run --no-sync ruff check . && uv run --no-sync mypy vgi_embed/
 ```
 
-`make test-sql` exports `VGI_EMBED_WORKER="uv run --python 3.13 embed_worker.py"`
+`make test-sql` exports `VGI_EMBED_WORKER=".venv/bin/python embed_worker.py"` (the synced project venv)
 and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"` (install once:
 `uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is required for the worker's VGI protocol vgi.v3 / 3.3, then put `~/.local/bin` on `PATH`).
 

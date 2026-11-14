@@ -68,6 +68,66 @@ def _eq(pairs: list[tuple[str, str]]) -> str:
     return json.dumps([{"description": description, "sql": sql} for sql, description in pairs])
 
 
+# Composed examples: several of the worker's functions working together in one
+# realistic query (retrieval, zero-shot labelling, near-duplicate detection).
+# Each SQL is defined once here and referenced by every example list that shows it
+# (the per-function lists below, which the agent simulator sees, and the
+# schema-level list in ``worker.py``). The inline corpora were chosen so the
+# winning rows beat the runners-up by a wide margin -- the outputs (ranking,
+# labels, pairs) are stable across ONNX builds even though raw floats are not.
+COMPOSED_SEARCH_SQL = (
+    "WITH docs(id, body) AS (VALUES "
+    "(1, 'Reset your password from the account settings page.'), "
+    "(2, 'Our office is closed on public holidays.'), "
+    "(3, 'Invoices are emailed on the first day of each month.'), "
+    "(4, 'Forgot your login? Use the password recovery link to sign in again.')), "
+    "q AS (SELECT embed.main.embed_query('how do I reset my password') AS v) "
+    "SELECT d.id, d.body, ROUND(embed.main.similarity(q.v, embed.main.embed_passage(d.body)), 3) AS score "
+    "FROM docs AS d CROSS JOIN q "
+    "ORDER BY score DESC, d.id LIMIT 2"
+)
+COMPOSED_SEARCH_DESCRIPTION = (
+    "Semantic search: embed the question once with embed_query, embed each corpus passage with "
+    "embed_passage, rank by similarity and keep the top 2 (both password-help passages)."
+)
+COMPOSED_CLASSIFY_SQL = (
+    "WITH tickets(ticket) AS (VALUES "
+    "('The app crashes every time I open the settings screen.'), "
+    "('I was charged twice for my subscription this month.'), "
+    "('Could you add a dark mode option?')), "
+    "labels(label) AS (VALUES ('bug report'), ('billing problem'), ('feature request')) "
+    "SELECT t.ticket, "
+    "arg_max(l.label, embed.main.similarity(embed.main.embed(t.ticket), embed.main.embed(l.label))) AS label "
+    "FROM tickets AS t CROSS JOIN labels AS l "
+    "GROUP BY t.ticket ORDER BY t.ticket"
+)
+COMPOSED_CLASSIFY_DESCRIPTION = (
+    "Zero-shot classification: embed each support ticket and each candidate label, then pick the "
+    "label with the highest similarity per ticket (bug report / billing problem / feature request)."
+)
+COMPOSED_DEDUP_SQL = (
+    "WITH titles(id, title) AS (VALUES "
+    "(1, 'How to reset a forgotten password'), "
+    "(2, 'Steps for resetting your lost password'), "
+    "(3, 'Quarterly revenue grew by twelve percent'), "
+    "(4, 'Revenue increased 12% this quarter'), "
+    "(5, 'Best hiking trails near Denver')), "
+    "v AS (SELECT id, title, embed.main.embed(title) AS vec FROM titles) "
+    "SELECT a.title AS title_a, b.title AS title_b, ROUND(embed.main.similarity(a.vec, b.vec), 3) AS score "
+    "FROM v AS a JOIN v AS b ON a.id < b.id "
+    "WHERE embed.main.similarity(a.vec, b.vec) > 0.8 "
+    "ORDER BY score DESC, a.id"
+)
+COMPOSED_DEDUP_DESCRIPTION = (
+    "Near-duplicate detection: embed every title once, self-join the vectors and keep pairs whose "
+    "similarity exceeds 0.8 (the two paraphrase pairs; the unrelated title matches nothing)."
+)
+COMPOSED_EXAMPLES: list[tuple[str, str]] = [
+    (COMPOSED_SEARCH_SQL, COMPOSED_SEARCH_DESCRIPTION),
+    (COMPOSED_CLASSIFY_SQL, COMPOSED_CLASSIFY_DESCRIPTION),
+    (COMPOSED_DEDUP_SQL, COMPOSED_DEDUP_DESCRIPTION),
+]
+
 # Per-function example sets (each `sql` is self-contained and re-runnable against
 # an attached `embed` worker; exact float values vary by ONNX build so the
 # examples project a stable shape -- a length, a rounded score, or a boolean --
@@ -81,6 +141,7 @@ _EMBED_EXAMPLES = [
         "SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim",
         "Embed text with an explicitly chosen model (768-dim `bge-base`).",
     ),
+    (COMPOSED_CLASSIFY_SQL, COMPOSED_CLASSIFY_DESCRIPTION),
 ]
 _EMBED_QUERY_EXAMPLES = [
     (
@@ -91,6 +152,7 @@ _EMBED_QUERY_EXAMPLES = [
         "SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim",
         "Embed a search query with an explicitly chosen model (768-dim `bge-base`).",
     ),
+    (COMPOSED_SEARCH_SQL, COMPOSED_SEARCH_DESCRIPTION),
 ]
 _EMBED_PASSAGE_EXAMPLES = [
     (
@@ -102,6 +164,7 @@ _EMBED_PASSAGE_EXAMPLES = [
         "'BAAI/bge-base-en-v1.5')) AS dim",
         "Embed a corpus passage with the same explicitly chosen model as the query.",
     ),
+    (COMPOSED_SEARCH_SQL, COMPOSED_SEARCH_DESCRIPTION),
 ]
 _SIMILARITY_EXAMPLES = [
     (
@@ -113,6 +176,8 @@ _SIMILARITY_EXAMPLES = [
         "> embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) AS related_wins",
         "Confirm a related pair ranks above an unrelated pair.",
     ),
+    (COMPOSED_SEARCH_SQL, COMPOSED_SEARCH_DESCRIPTION),
+    (COMPOSED_DEDUP_SQL, COMPOSED_DEDUP_DESCRIPTION),
 ]
 _EMBEDDING_DIM_EXAMPLES = [
     (

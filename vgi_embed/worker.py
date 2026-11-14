@@ -34,7 +34,7 @@ from vgi import Worker
 from vgi.catalog import Catalog, Schema, View
 
 from vgi_embed import models
-from vgi_embed.scalars import SCALAR_FUNCTIONS
+from vgi_embed.scalars import COMPOSED_EXAMPLES, SCALAR_FUNCTIONS
 from vgi_embed.tables import TABLE_FUNCTIONS
 
 
@@ -268,6 +268,29 @@ _EMBED_CATALOG = Catalog(
                         "weather today is sunny and warm.'? Return a single boolean."
                     ),
                 },
+                {
+                    "name": "semantic_search_best_passage",
+                    "prompt": (
+                        "Run a semantic search over these four passages: 'Water boils at 100 "
+                        "degrees Celsius at sea level.', 'The Eiffel Tower is located in Paris, "
+                        "France.', 'Python is a popular programming language.', 'Mount Everest is "
+                        "the tallest mountain on Earth.'. Using the retrieval embedding functions, "
+                        "which passage best answers the search query 'where is the eiffel tower'? "
+                        "Return one row with one VARCHAR column: the passage text."
+                    ),
+                },
+                {
+                    "name": "zero_shot_ticket_labels",
+                    "prompt": (
+                        "Classify each of these support tickets into the closest of the labels "
+                        "'shipping delay', 'payment error', 'feature request' by embedding "
+                        "similarity between the ticket text and the label text: 'My package never "
+                        "arrived and tracking has not updated in a week.', 'The checkout page shows "
+                        "an error when I enter my card.', 'Please let me export my reports as CSV.'. "
+                        "Return one row per ticket with two VARCHAR columns: the ticket text and "
+                        "its label."
+                    ),
+                },
             ]
         ),
     },
@@ -398,6 +421,8 @@ _EMBED_CATALOG = Catalog(
                             "description": "List the supported models and their dimensions.",
                             "sql": "SELECT model, dim FROM embed.main.supported_models() ORDER BY model",
                         },
+                        # Composed: several functions in one realistic query (defined once in scalars.py).
+                        *({"description": description, "sql": sql} for sql, description in COMPOSED_EXAMPLES),
                     ]
                 ),
             },

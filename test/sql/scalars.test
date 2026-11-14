@@ -156,5 +156,53 @@ SELECT embed.embedding_dim('BAAI/bge-base-en-v1.5');
 ----
 768
 
+# ---- composed examples (embed_query/embed_passage/embed + similarity) -------
+# Mirrors the composed example queries in vgi_embed/scalars.py. Only the stable
+# shape is asserted (ranked ids, winning labels, matched pairs) -- never floats.
+
+# Semantic search: the two password-help passages rank top-2, in this order.
+query I
+WITH docs(id, body) AS (VALUES
+    (1, 'Reset your password from the account settings page.'),
+    (2, 'Our office is closed on public holidays.'),
+    (3, 'Invoices are emailed on the first day of each month.'),
+    (4, 'Forgot your login? Use the password recovery link to sign in again.')),
+q AS (SELECT embed.embed_query('how do I reset my password') AS v)
+SELECT d.id FROM docs AS d CROSS JOIN q
+ORDER BY embed.similarity(q.v, embed.embed_passage(d.body)) DESC, d.id LIMIT 2;
+----
+1
+4
+
+# Zero-shot classification: the closest label wins for every ticket.
+query II
+WITH tickets(ticket) AS (VALUES
+    ('The app crashes every time I open the settings screen.'),
+    ('I was charged twice for my subscription this month.'),
+    ('Could you add a dark mode option?')),
+labels(label) AS (VALUES ('bug report'), ('billing problem'), ('feature request'))
+SELECT t.ticket, arg_max(l.label, embed.similarity(embed.embed(t.ticket), embed.embed(l.label)))
+FROM tickets AS t CROSS JOIN labels AS l
+GROUP BY t.ticket ORDER BY t.ticket;
+----
+Could you add a dark mode option?	feature request
+I was charged twice for my subscription this month.	billing problem
+The app crashes every time I open the settings screen.	bug report
+
+# Near-duplicate detection: exactly the two paraphrase pairs clear 0.8.
+query II
+WITH titles(id, title) AS (VALUES
+    (1, 'How to reset a forgotten password'),
+    (2, 'Steps for resetting your lost password'),
+    (3, 'Quarterly revenue grew by twelve percent'),
+    (4, 'Revenue increased 12% this quarter'),
+    (5, 'Best hiking trails near Denver')),
+v AS (SELECT id, embed.embed(title) AS vec FROM titles)
+SELECT a.id, b.id FROM v AS a JOIN v AS b ON a.id < b.id
+WHERE embed.similarity(a.vec, b.vec) > 0.8 ORDER BY a.id;
+----
+1	2
+3	4
+
 statement ok
 DETACH embed;
