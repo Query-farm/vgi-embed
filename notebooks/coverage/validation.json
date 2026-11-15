@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "status": "met",
+  "meets_target": true,
+  "catalogs": {
+    "released": {
+      "catalog_status": "verified",
+      "revision": "v0.5.0",
+      "catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+      "collection_reconciled": true,
+      "denominator": 6,
+      "observed_objects": 6,
+      "required": 6,
+      "verified_count": 6,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 6,
+      "runtime_revisions": [
+        "v0.5.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_passage"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_query"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embedding_dim"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "similarity"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "supported_models"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed(text VARCHAR) -> FLOAT[]",
+            "embed(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_passage",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed_passage(text VARCHAR) -> FLOAT[]",
+            "embed_passage(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_query",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed_query(text VARCHAR) -> FLOAT[]",
+            "embed_query(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embedding_dim",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embedding_dim(model VARCHAR) -> INTEGER"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "similarity",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "similarity(a FLOAT[], b FLOAT[]) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "supported_models",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "VIEW(model VARCHAR, dim INTEGER)",
+            "supported_models() -> TABLE(model VARCHAR, dim INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    },
+    "current": {
+      "catalog_status": "verified",
+      "revision": "b77b166a8d437c144e39b55b5ad4f483f915f836",
+      "catalog_sha256": "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab",
+      "collection_reconciled": true,
+      "denominator": 6,
+      "observed_objects": 6,
+      "required": 6,
+      "verified_count": 6,
+      "candidate_count": 0,
+      "fraction": 1.0,
+      "meets_target": true,
+      "exact_runtime_count": 0,
+      "runtime_revisions": [
+        "v0.5.0"
+      ],
+      "covered": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_passage"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_query"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embedding_dim"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "similarity"
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "supported_models"
+        }
+      ],
+      "uncovered": [],
+      "objects": [
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed(text VARCHAR) -> FLOAT[]",
+            "embed(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_passage",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed_passage(text VARCHAR) -> FLOAT[]",
+            "embed_passage(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embed_query",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embed_query(text VARCHAR) -> FLOAT[]",
+            "embed_query(text VARCHAR, model VARCHAR) -> FLOAT[]"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "embedding_dim",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "embedding_dim(model VARCHAR) -> INTEGER"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "similarity",
+          "kinds": [
+            "function"
+          ],
+          "signatures": [
+            "similarity(a FLOAT[], b FLOAT[]) -> DOUBLE"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        },
+        {
+          "schema": [
+            "main"
+          ],
+          "name": "supported_models",
+          "kinds": [
+            "function",
+            "table"
+          ],
+          "signatures": [
+            "VIEW(model VARCHAR, dim INTEGER)",
+            "supported_models() -> TABLE(model VARCHAR, dim INTEGER)"
+          ],
+          "access": [
+            "read"
+          ],
+          "authentication": [
+            "none"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  },
+  "interface_drift": {
+    "known": true,
+    "current_only": [],
+    "released_only": [],
+    "changed": []
+  },
+  "notebooks": {
+    "01_audit_retrieval_depth.ipynb": {
+      "verified": true,
+      "issues": []
+    },
+    "02_similarity_is_a_review_signal.ipynb": {
+      "verified": true,
+      "issues": []
+    }
+  },
+  "examples": [
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "supported_models"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "embedding_dim"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "embed_query"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "embed_passage"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "similarity"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    },
+    {
+      "status": "verified",
+      "issues": [],
+      "verified_catalogs": [
+        "released",
+        "current"
+      ],
+      "object": {
+        "schema": [
+          "main"
+        ],
+        "name": "embed"
+      },
+      "notebook": "02_similarity_is_a_review_signal.ipynb",
+      "runtime_revision": "v0.5.0",
+      "runtime_catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289"
+    }
+  ],
+  "issues": []
+}

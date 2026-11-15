@@ -1,0 +1,18 @@
+{
+  "query": "SELECT len(embed.main.embed('hello world','BAAI/bge-small-en-v1.5')) AS generic_dim,len(embed.main.embed_query('reset password','BAAI/bge-small-en-v1.5')) AS query_dim,len(embed.main.embed_passage('Use the password reset link.','BAAI/bge-small-en-v1.5')) AS passage_dim,embed.main.embedding_dim('BAAI/bge-small-en-v1.5') AS advertised_dim",
+  "captured_at": "2026-11-15T00:55:05.728380+00:00",
+  "columns": [
+    "generic_dim",
+    "query_dim",
+    "passage_dim",
+    "advertised_dim"
+  ],
+  "rows": [
+    [
+      384,
+      384,
+      384,
+      384
+    ]
+  ]
+}

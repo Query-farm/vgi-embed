@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "repository": "Query-farm/vgi-embed",
+  "revision": "b77b166a8d437c144e39b55b5ad4f483f915f836",
+  "captured_at": "2026-11-15T00:55:05.684391+00:00",
+  "default_schema": "main",
+  "scope": "all_public_functions_and_tables",
+  "complete": true,
+  "evidence": [
+    {
+      "path": "coverage/arguments.json",
+      "sha256": "7c4355daf6367e18301452120f4b4936c054ce14f7109364e311d681f17d4a2b",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/catalog-metadata.json",
+      "sha256": "037267dca5e2ef41745b6cebdb9977e59e610de4d294e4a40085bef35912dfe0",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/copy-formats.json",
+      "sha256": "d530f65413b957d41ad12ddd96158262b2980902d54d2c913dd2dd96e26481ae",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/functions.json",
+      "sha256": "104146b6a1623dd73b14df57736a09c9cc254ab18b6e7124598fd1edee0efeb2",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/resolved-worker-packages.json",
+      "sha256": "18ea766cbf40af6cefaaad380ad82bd47bfa45829d25e23067eeea2a17dd5eee",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/source-compatibility.json",
+      "sha256": "74f0c525dfcc6589a13af2df229e4dd8b03a8ef2cdd7bf11e1f16553cf428485",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/source-diff.patch",
+      "sha256": "9ebae6e49f3d92cb717ebf0fec1edb300e2d02ed5dfd7a82958ecb61b54a4b7b",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/supported_models-columns.json",
+      "sha256": "204495fd26e6db867be87b53b38376faa90275ae97f48417c78894d7d53fe1e7",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/supported_models.json",
+      "sha256": "6d9416c25d802f21d599e1808b9275e7cec7ccaaf198915ff34ba12456c9f214",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/tables.json",
+      "sha256": "eeb56ee62af8f960e2a3de4fb935f7e5ff181b545db1f1f1a8a4522db9b6bf53",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    },
+    {
+      "path": "coverage/views.json",
+      "sha256": "8897ac0e6e0365a64b4e6b68c803db78d729171f12f6cf3c364bfb5bd0e8dea6",
+      "description": "Actual full function/table/view exports, overload arguments, output schema, reviewed source diff and pinned model/runtime provenance."
+    }
+  ],
+  "objects": [
+    {
+      "schema": "main",
+      "name": "embed",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "embed(text VARCHAR) -> FLOAT[]",
+        "embed(text VARCHAR, model VARCHAR) -> FLOAT[]"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "embed_passage",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "embed_passage(text VARCHAR) -> FLOAT[]",
+        "embed_passage(text VARCHAR, model VARCHAR) -> FLOAT[]"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "embed_query",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "embed_query(text VARCHAR) -> FLOAT[]",
+        "embed_query(text VARCHAR, model VARCHAR) -> FLOAT[]"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "embedding_dim",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "embedding_dim(model VARCHAR) -> INTEGER"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "similarity",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "similarity(a FLOAT[], b FLOAT[]) -> DOUBLE"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "supported_models",
+      "kind": "function",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "supported_models() -> TABLE(model VARCHAR, dim INTEGER)"
+      ]
+    },
+    {
+      "schema": "main",
+      "name": "supported_models",
+      "kind": "table",
+      "authentication": "none",
+      "access": "read",
+      "signatures": [
+        "VIEW(model VARCHAR, dim INTEGER)"
+      ],
+      "alias_of_same_named_function": true
+    }
+  ],
+  "launch": "uvx --python 3.13 --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker",
+  "runtime": "Haybarn2.0.0rc11",
+  "review_notes": "Six logical names: embed, embed_query, embed_passage, similarity, embedding_dim, supported_models. Three embedding functions have arity overloads; supported_models function and VIEW alias count once. No physical tables, COPY handlers, authenticated or write operations. Four advertised models are metadata, not proof of four working model runtimes; only pinned BGE-small-en-v1.5 runs. Current scalars.py and worker.py only add composed example SQL and agent-task metadata; full source diff reviewed and retained. Compute methods, supported-model registry, catalog registration/signatures, entrypoint and root dependencies are unchanged. The actual release catalog supports reviewed current-interface coverage, not an exact-current runtime claim."
+}

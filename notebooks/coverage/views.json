@@ -1,0 +1,46 @@
+{
+  "query": "SELECT * FROM duckdb_views() WHERE database_name='embed'",
+  "captured_at": "2026-11-15T00:55:05.692480+00:00",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "view_name",
+    "view_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "column_count",
+    "sql",
+    "is_bound"
+  ],
+  "rows": [
+    [
+      "embed",
+      22595,
+      "main",
+      22596,
+      "supported_models",
+      22735,
+      "Discovery table of every (model, dim) the embed worker supports.",
+      {
+        "category": "embeddings",
+        "domain": "machine-learning",
+        "topic": "supported-models",
+        "vgi.category": "discovery",
+        "vgi.doc_llm": "A ready-to-scan **discovery table** of every `(model, dim)` pair the embed worker supports, so you can find the valid model names to pass as the second argument of `embed(text, model)` and to `embedding_dim(model)`, along with the `FLOAT[]` length each model produces. Browse this view directly (no parentheses, no arguments); it is the parenthesis-free counterpart of the `supported_models()` table function. The `model` column lists the four supported bge / MiniLM checkpoints and the `dim` column their vector widths (384 or 768). Runnable browse/filter examples are attached as example queries.",
+        "vgi.doc_md": "## supported_models (view)\n\nEvery `(model, dim)` the embed worker supports, as a plain browsable table.\n\nThe `model` column holds the name you pass to `embed(text, model)` and `embedding_dim(model)`; the `dim` column is the `FLOAT[]` vector length that model produces (384 for the small bge / MiniLM checkpoints, 768 for `bge-base`). This view is the no-argument, parenthesis-free counterpart of the `supported_models()` table function -- browse it to discover valid model names before embedding a corpus.",
+        "vgi.example_queries": "[{\"description\": \"List the supported embedding models and their dimensions.\", \"sql\": \"SELECT model, dim FROM embed.main.supported_models ORDER BY model\"}, {\"description\": \"Dimension of the default model.\", \"sql\": \"SELECT dim FROM embed.main.supported_models WHERE model = 'BAAI/bge-small-en-v1.5'\"}]",
+        "vgi.keywords": "[\"supported models\", \"list models\", \"available models\", \"model catalog\", \"discovery\", \"dimension\", \"embedding models\", \"bge\", \"what models\"]",
+        "vgi.title": "Available Models"
+      },
+      false,
+      false,
+      null,
+      "CREATE VIEW supported_models AS SELECT model, dim FROM (SELECT * FROM (VALUES ('BAAI/bge-base-en-v1.5', 768), ('BAAI/bge-small-en', 384), ('BAAI/bge-small-en-v1.5', 384), ('sentence-transformers/all-MiniLM-L6-v2', 384)) AS valueslist) AS t(model, dim);",
+      false
+    ]
+  ]
+}

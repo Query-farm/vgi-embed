@@ -1,0 +1,392 @@
+{
+  "query": "SELECT * FROM duckdb_functions() WHERE database_name='embed' ORDER BY schema_name,function_name",
+  "captured_at": "2026-11-15T00:55:05.684391+00:00",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "function_name",
+    "alias_of",
+    "function_type",
+    "description",
+    "comment",
+    "tags",
+    "return_type",
+    "parameters",
+    "parameter_types",
+    "varargs",
+    "macro_definition",
+    "has_side_effects",
+    "internal",
+    "extension_name",
+    "function_oid",
+    "examples",
+    "stability",
+    "categories"
+  ],
+  "rows": [
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed",
+      null,
+      "scalar",
+      "Embed text into a fixed-length FLOAT[] vector using the default model (BAAI/bge-small-en-v1.5, 384-dim). NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "embedding",
+        "vgi.doc_llm": "## embed(text, model)\n\nThe two-argument arity overload of `embed`: embed text into a `FLOAT[]` vector using an *explicit* model name instead of the default. Call `supported_models()` to discover valid model names and their output dimensions.\n\n**When to use.** Use this when you need a specific model -- a larger model for higher recall, or a model whose dimension matches an existing vector index. Otherwise use the one-argument `embed(text)`.\n\n**Input/output.** Inputs: `VARCHAR` text and a constant `VARCHAR` model name. Output: one `FLOAT[]` per row (NULL/empty text -> NULL). The vector length depends on the chosen model; check `embedding_dim(model)`.\n\n**Edge cases.** Scalars are positional-only, so the model is a second positional argument, not a named one.",
+        "vgi.doc_md": "# embed(text, model)\n\nEmbed text with an explicitly chosen model (the two-argument arity overload of `embed`).\n\n## Usage\n\nPass the model name as a second positional argument, e.g. `embed(text, 'BAAI/bge-small-en-v1.5')`; browse the `supported_models` view for valid names and their vector widths. Runnable, catalog-qualified examples are attached as example queries.\n\n## Notes\n\n- Pick a model from `supported_models()`; vector length varies by model.\n- NULL or empty input returns NULL.\n- The model name is a positional argument (scalars take no named args).",
+        "vgi.example_queries": "[{\"description\": \"Embed a string into a 384-dim `FLOAT[]` with the default model.\", \"sql\": \"SELECT len(embed.main.embed('hello world')) AS dim\"}, {\"description\": \"Embed text with an explicitly chosen model (768-dim `bge-base`).\", \"sql\": \"SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Look up the configured default model's vector dimension.\", \"sql\": \"SELECT embed.main.embedding_dim('') AS dim\", \"expected_result\": [{\"dim\": 384}]}, {\"description\": \"embed() returns a FLOAT[] with the default model's dimension.\", \"sql\": \"SELECT len(embed.main.embed('hello world')) AS dim\", \"expected_result\": [{\"dim\": 384}]}]",
+        "vgi.keywords": "[\"embed\", \"embedding\", \"model\", \"choose model\", \"bge\", \"fastembed\", \"onnx\", \"vector\", \"text to vector\", \"dimension\"]",
+        "vgi.title": "Embed Text With Chosen Model"
+      },
+      "FLOAT[]",
+      [
+        "text"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22599,
+      [
+        "SELECT len(embed.main.embed('hello world')) AS dim",
+        "SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed",
+      null,
+      "scalar",
+      "Embed text into a FLOAT[] vector with an explicit model (see supported_models()). NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "embedding",
+        "vgi.doc_llm": "## embed(text, model)\n\nThe two-argument arity overload of `embed`: embed text into a `FLOAT[]` vector using an *explicit* model name instead of the default. Call `supported_models()` to discover valid model names and their output dimensions.\n\n**When to use.** Use this when you need a specific model -- a larger model for higher recall, or a model whose dimension matches an existing vector index. Otherwise use the one-argument `embed(text)`.\n\n**Input/output.** Inputs: `VARCHAR` text and a constant `VARCHAR` model name. Output: one `FLOAT[]` per row (NULL/empty text -> NULL). The vector length depends on the chosen model; check `embedding_dim(model)`.\n\n**Edge cases.** Scalars are positional-only, so the model is a second positional argument, not a named one.",
+        "vgi.doc_md": "# embed(text, model)\n\nEmbed text with an explicitly chosen model (the two-argument arity overload of `embed`).\n\n## Usage\n\nPass the model name as a second positional argument, e.g. `embed(text, 'BAAI/bge-small-en-v1.5')`; browse the `supported_models` view for valid names and their vector widths. Runnable, catalog-qualified examples are attached as example queries.\n\n## Notes\n\n- Pick a model from `supported_models()`; vector length varies by model.\n- NULL or empty input returns NULL.\n- The model name is a positional argument (scalars take no named args).",
+        "vgi.example_queries": "[{\"description\": \"Embed a string into a 384-dim `FLOAT[]` with the default model.\", \"sql\": \"SELECT len(embed.main.embed('hello world')) AS dim\"}, {\"description\": \"Embed text with an explicitly chosen model (768-dim `bge-base`).\", \"sql\": \"SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Look up the configured default model's vector dimension.\", \"sql\": \"SELECT embed.main.embedding_dim('') AS dim\", \"expected_result\": [{\"dim\": 384}]}, {\"description\": \"embed() returns a FLOAT[] with the default model's dimension.\", \"sql\": \"SELECT len(embed.main.embed('hello world')) AS dim\", \"expected_result\": [{\"dim\": 384}]}]",
+        "vgi.keywords": "[\"embed\", \"embedding\", \"model\", \"choose model\", \"bge\", \"fastembed\", \"onnx\", \"vector\", \"text to vector\", \"dimension\"]",
+        "vgi.title": "Embed Text With Chosen Model"
+      },
+      "FLOAT[]",
+      [
+        "text",
+        "model"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22599,
+      [
+        "SELECT len(embed.main.embed('hello world')) AS dim",
+        "SELECT len(embed.main.embed('hello world', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed_passage",
+      null,
+      "scalar",
+      "Embed a document/passage with the default model. For bge retrieval models passages get NO instruction prefix (queries do); this mirrors that. NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "retrieval",
+        "vgi.doc_llm": "## embed_passage(text [, model])\n\nEmbed a *document/passage* for retrieval. For bge-style retrieval models, passages get **no** instruction prefix (only queries do), and this function mirrors that convention exactly.\n\n**When to use.** Use `embed_passage` for the corpus side of asymmetric retrieval and `embed_query` for the user query, then rank with `similarity(embed_query(q), embed_passage(doc))`. Pre-compute passage vectors once and store them (e.g. in a DuckDB VSS HNSW index).\n\n**Input/output.** Input: one `VARCHAR` passage per row and an optional constant `VARCHAR` model as the second positional argument. Output: one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. Omitting the model or passing an empty string uses `BAAI/bge-small-en-v1.5`. Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default. Use the same model for queries and passages.\n\n**Edge cases.** Numerically this equals plain `embed` for bge (passages have no prefix); it exists as a named counterpart to `embed_query` so retrieval pipelines read symmetrically.",
+        "vgi.doc_md": "# embed_passage(text [, model])\n\nEmbed a document/passage for retrieval (the corpus side of asymmetric retrieval -- no query prefix).\n\n## Usage\n\nMaterialize passage vectors once with `embed_passage(body)` into a stored column (e.g. a DuckDB VSS HNSW index over the resulting `FLOAT[]`), then at query time score them against `embed_query(q)`. Runnable, catalog-qualified examples are attached as example queries.\n\n## Notes\n\n- Pair with `embed_query` using the same model as the second positional argument.\n- Default: `BAAI/bge-small-en-v1.5`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n- For bge, passages get no instruction prefix (by design).\n- NULL or empty input returns NULL.",
+        "vgi.example_queries": "[{\"description\": \"Embed a corpus passage with the default model and no query prefix.\", \"sql\": \"SELECT len(embed.main.embed_passage('Reset your password from the account settings page.')) AS dim\"}, {\"description\": \"Embed a corpus passage with the same explicitly chosen model as the query.\", \"sql\": \"SELECT len(embed.main.embed_passage('Reset your password in account settings.', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.keywords": "[\"embed passage\", \"document embedding\", \"corpus\", \"retrieval\", \"indexing\", \"no prefix\", \"bge\", \"rag\", \"semantic search\", \"vector\"]",
+        "vgi.title": "Embed Document Passage"
+      },
+      "FLOAT[]",
+      [
+        "text"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22600,
+      [
+        "SELECT len(embed.main.embed_passage('Reset your password from the account settings page.')) AS dim",
+        "SELECT len(embed.main.embed_passage('Reset your password in account settings.', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding",
+        "retrieval"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed_passage",
+      null,
+      "scalar",
+      "Embed a document/passage with an explicit model and no query prefix. NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "retrieval",
+        "vgi.doc_llm": "## embed_passage(text [, model])\n\nEmbed a *document/passage* for retrieval. For bge-style retrieval models, passages get **no** instruction prefix (only queries do), and this function mirrors that convention exactly.\n\n**When to use.** Use `embed_passage` for the corpus side of asymmetric retrieval and `embed_query` for the user query, then rank with `similarity(embed_query(q), embed_passage(doc))`. Pre-compute passage vectors once and store them (e.g. in a DuckDB VSS HNSW index).\n\n**Input/output.** Input: one `VARCHAR` passage per row and an optional constant `VARCHAR` model as the second positional argument. Output: one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. Omitting the model or passing an empty string uses `BAAI/bge-small-en-v1.5`. Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default. Use the same model for queries and passages.\n\n**Edge cases.** Numerically this equals plain `embed` for bge (passages have no prefix); it exists as a named counterpart to `embed_query` so retrieval pipelines read symmetrically.",
+        "vgi.doc_md": "# embed_passage(text [, model])\n\nEmbed a document/passage for retrieval (the corpus side of asymmetric retrieval -- no query prefix).\n\n## Usage\n\nMaterialize passage vectors once with `embed_passage(body)` into a stored column (e.g. a DuckDB VSS HNSW index over the resulting `FLOAT[]`), then at query time score them against `embed_query(q)`. Runnable, catalog-qualified examples are attached as example queries.\n\n## Notes\n\n- Pair with `embed_query` using the same model as the second positional argument.\n- Default: `BAAI/bge-small-en-v1.5`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n- For bge, passages get no instruction prefix (by design).\n- NULL or empty input returns NULL.",
+        "vgi.example_queries": "[{\"description\": \"Embed a corpus passage with the default model and no query prefix.\", \"sql\": \"SELECT len(embed.main.embed_passage('Reset your password from the account settings page.')) AS dim\"}, {\"description\": \"Embed a corpus passage with the same explicitly chosen model as the query.\", \"sql\": \"SELECT len(embed.main.embed_passage('Reset your password in account settings.', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.keywords": "[\"embed passage\", \"document embedding\", \"corpus\", \"retrieval\", \"indexing\", \"no prefix\", \"bge\", \"rag\", \"semantic search\", \"vector\"]",
+        "vgi.title": "Embed Document Passage"
+      },
+      "FLOAT[]",
+      [
+        "text",
+        "model"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22600,
+      [
+        "SELECT len(embed.main.embed_passage('Reset your password from the account settings page.')) AS dim",
+        "SELECT len(embed.main.embed_passage('Reset your password in account settings.', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding",
+        "retrieval"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed_query",
+      null,
+      "scalar",
+      "Embed a search query with the default model, applying the model's recommended query instruction prefix (for bge: 'Represent this sentence for searching relevant passages: '). NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "retrieval",
+        "vgi.doc_llm": "## embed_query(text [, model])\n\nEmbed a *search query* for retrieval, applying the selected model's recommended query instruction prefix (for bge: `Represent this sentence for searching relevant passages: `). This is the query side of asymmetric retrieval.\n\n**When to use.** Use `embed_query` for the short user query and `embed_passage` for the corpus documents, then rank passages by `similarity(embed_query(q), embed_passage(doc))`. The prefix nudges the query vector toward the passages that answer it, improving recall over a plain symmetric `embed`.\n\n**Input/output.** Input: one `VARCHAR` query per row and an optional constant `VARCHAR` model as the second positional argument. Output: one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. Omitting the model or passing an empty string uses `BAAI/bge-small-en-v1.5`. Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default.\n\n**Edge cases.** Use the same model for queries and passages; matching dimensions alone do not make embeddings compatible. Models without a query instruction prefix embed queries as-is.",
+        "vgi.doc_md": "# embed_query(text [, model])\n\nEmbed a search query for retrieval, applying the model's query instruction prefix (the query side of asymmetric retrieval).\n\n## Usage\n\nEmbed the short user query with `embed_query(text)` and the corpus documents with `embed_passage(text)`, then rank documents by `similarity(embed_passage(body), embed_query(q))` descending. Runnable, catalog-qualified retrieval examples are attached as example queries.\n\n## Notes\n\n- Pass the same model as the second positional argument to both retrieval functions.\n- Default: `BAAI/bge-small-en-v1.5`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n- NULL or empty input returns NULL.",
+        "vgi.example_queries": "[{\"description\": \"Embed a search query with the query-side instruction prefix.\", \"sql\": \"SELECT len(embed.main.embed_query('how do I reset my password')) AS dim\"}, {\"description\": \"Embed a search query with an explicitly chosen model (768-dim `bge-base`).\", \"sql\": \"SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.keywords": "[\"embed query\", \"retrieval\", \"search\", \"query embedding\", \"asymmetric\", \"instruction prefix\", \"bge\", \"rag\", \"semantic search\", \"vector\"]",
+        "vgi.title": "Embed Retrieval Query"
+      },
+      "FLOAT[]",
+      [
+        "text"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22601,
+      [
+        "SELECT len(embed.main.embed_query('how do I reset my password')) AS dim",
+        "SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding",
+        "retrieval"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embed_query",
+      null,
+      "scalar",
+      "Embed a search query with an explicit model and its query instruction prefix. NULL/empty -> NULL.",
+      null,
+      {
+        "vgi.category": "retrieval",
+        "vgi.doc_llm": "## embed_query(text [, model])\n\nEmbed a *search query* for retrieval, applying the selected model's recommended query instruction prefix (for bge: `Represent this sentence for searching relevant passages: `). This is the query side of asymmetric retrieval.\n\n**When to use.** Use `embed_query` for the short user query and `embed_passage` for the corpus documents, then rank passages by `similarity(embed_query(q), embed_passage(doc))`. The prefix nudges the query vector toward the passages that answer it, improving recall over a plain symmetric `embed`.\n\n**Input/output.** Input: one `VARCHAR` query per row and an optional constant `VARCHAR` model as the second positional argument. Output: one `FLOAT[]` per row (NULL/empty -> NULL), with the selected model's dimension. Omitting the model or passing an empty string uses `BAAI/bge-small-en-v1.5`. Set `VGI_EMBED_DEFAULT_MODEL` before worker startup to change the default.\n\n**Edge cases.** Use the same model for queries and passages; matching dimensions alone do not make embeddings compatible. Models without a query instruction prefix embed queries as-is.",
+        "vgi.doc_md": "# embed_query(text [, model])\n\nEmbed a search query for retrieval, applying the model's query instruction prefix (the query side of asymmetric retrieval).\n\n## Usage\n\nEmbed the short user query with `embed_query(text)` and the corpus documents with `embed_passage(text)`, then rank documents by `similarity(embed_passage(body), embed_query(q))` descending. Runnable, catalog-qualified retrieval examples are attached as example queries.\n\n## Notes\n\n- Pass the same model as the second positional argument to both retrieval functions.\n- Default: `BAAI/bge-small-en-v1.5`; configure `VGI_EMBED_DEFAULT_MODEL` before startup.\n- NULL or empty input returns NULL.",
+        "vgi.example_queries": "[{\"description\": \"Embed a search query with the query-side instruction prefix.\", \"sql\": \"SELECT len(embed.main.embed_query('how do I reset my password')) AS dim\"}, {\"description\": \"Embed a search query with an explicitly chosen model (768-dim `bge-base`).\", \"sql\": \"SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim\"}]",
+        "vgi.keywords": "[\"embed query\", \"retrieval\", \"search\", \"query embedding\", \"asymmetric\", \"instruction prefix\", \"bge\", \"rag\", \"semantic search\", \"vector\"]",
+        "vgi.title": "Embed Retrieval Query"
+      },
+      "FLOAT[]",
+      [
+        "text",
+        "model"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22601,
+      [
+        "SELECT len(embed.main.embed_query('how do I reset my password')) AS dim",
+        "SELECT len(embed.main.embed_query('how do I reset my password', 'BAAI/bge-base-en-v1.5')) AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding",
+        "retrieval"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "embedding_dim",
+      null,
+      "scalar",
+      "Output dimension (vector length) for a model name; '' = default model",
+      null,
+      {
+        "vgi.category": "discovery",
+        "vgi.doc_llm": "## embedding_dim(model)\n\nReturn the output dimension (the `FLOAT[]` length) a model produces, **without** loading the model or embedding anything. Pass `''` or NULL to get the default model's dimension.\n\n**When to use.** Use it to size a vector column or index ahead of time (e.g. an `ARRAY[FLOAT, N]` / VSS HNSW index), or to validate that a chosen model matches an existing index width before re-embedding a corpus.\n\n**Input/output.** Input: a `VARCHAR` model name (`''`/NULL = default). Output: `INTEGER` dimension, or NULL for an unknown model name (it does not raise).\n\n**Edge cases.** Unknown model names return NULL rather than erroring, so a dirty model column won't abort a scan.",
+        "vgi.doc_md": "# embedding_dim(model)\n\nOutput dimension (vector length) for a model name -- `''`/NULL = the default model. No model is loaded.\n\n## Usage\n\n```sql\nSELECT embed.embedding_dim('BAAI/bge-small-en-v1.5');  -- 384\nSELECT embed.embedding_dim('');                        -- default model dim\n```\n\n## Notes\n\n- Unknown model name -> NULL (no error).\n- Use to size a vector column / VSS index before embedding.",
+        "vgi.example_queries": "[{\"description\": \"Look up a model's output dimension without loading the model.\", \"sql\": \"SELECT embed.main.embedding_dim('BAAI/bge-base-en-v1.5') AS dim\"}]",
+        "vgi.keywords": "[\"embedding dim\", \"dimension\", \"vector length\", \"model size\", \"float array length\", \"index width\", \"metadata\", \"supported models\"]",
+        "vgi.title": "Embedding Dimension Lookup"
+      },
+      "INTEGER",
+      [
+        "model"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22602,
+      [
+        "SELECT embed.main.embedding_dim('BAAI/bge-base-en-v1.5') AS dim"
+      ],
+      "CONSISTENT",
+      [
+        "embedding",
+        "metadata"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "similarity",
+      null,
+      "scalar",
+      "Cosine similarity of two FLOAT[] vectors, in [-1, 1] (pure arithmetic, no model). NULL/empty/length-mismatch -> NULL.",
+      null,
+      {
+        "vgi.category": "similarity",
+        "vgi.doc_llm": "## similarity(a, b)\n\nCompute the **cosine similarity** of two `FLOAT[]` vectors, a value in `[-1, 1]` where 1 means identical direction. This is pure arithmetic -- it loads no model and does no I/O -- so it is cheap to call over large joins.\n\n**When to use.** Use it to rank or threshold embedding pairs: `ORDER BY similarity(embed_query(q), embed_passage(doc)) DESC` for retrieval, or a `WHERE similarity(...) > 0.8` cutoff for dedup/near-duplicate detection.\n\n**Input/output.** Inputs: two `FLOAT[]` vectors (typically from `embed*`). Output: one `DOUBLE` per row. NULL, empty, or length-mismatched vector pairs yield NULL rather than an error.\n\n**Edge cases.** A zero vector has undefined direction and yields NULL; vectors must be the same length to be comparable.",
+        "vgi.doc_md": "# similarity(a, b)\n\nCosine similarity of two `FLOAT[]` vectors, in `[-1, 1]` (pure arithmetic, no model).\n\n## Usage\n\nFeed two `FLOAT[]` vectors (typically from the `embed*` functions) to `similarity(a, b)` to get a `DOUBLE` in `[-1, 1]`; order retrieval candidates by it descending, or threshold it (e.g. `> 0.8`) for near-duplicate detection. Runnable, catalog-qualified examples are attached as example queries.\n\n## Notes\n\n- 1.0 = identical direction, 0 = orthogonal, -1 = opposite.\n- NULL / empty / length-mismatch returns NULL.",
+        "vgi.example_queries": "[{\"description\": \"Score how similar two embeddings are (rounded for stable output).\", \"sql\": \"SELECT ROUND(embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')), 3) AS related\"}, {\"description\": \"Confirm a related pair ranks above an unrelated pair.\", \"sql\": \"SELECT embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')) > embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) AS related_wins\"}]",
+        "vgi.keywords": "[\"similarity\", \"cosine similarity\", \"cosine\", \"distance\", \"score\", \"rank\", \"compare vectors\", \"dot product\", \"nearest neighbor\", \"semantic search\"]",
+        "vgi.title": "Cosine Similarity Score"
+      },
+      "DOUBLE",
+      [
+        "a",
+        "b"
+      ],
+      [
+        "FLOAT[]",
+        "FLOAT[]"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22603,
+      [
+        "SELECT ROUND(embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')), 3) AS related",
+        "SELECT embed.main.similarity(embed.main.embed('dog'), embed.main.embed('puppy')) > embed.main.similarity(embed.main.embed('dog'), embed.main.embed('airplane')) AS related_wins"
+      ],
+      "CONSISTENT",
+      [
+        "similarity"
+      ]
+    ],
+    [
+      "embed",
+      "22595",
+      "main",
+      "supported_models",
+      null,
+      "table",
+      "Every (model, dim) the embed worker supports",
+      null,
+      {
+        "vgi.category": "discovery",
+        "vgi.doc_llm": "## supported_models()\n\nList every embedding model the worker can use, one `(model, dim)` pair per row. Takes no arguments.\n\n**When to use.** Use it to discover the valid values for the second argument of `embed(text, model)` (and for `embedding_dim(model)`) and to see each model's output dimension before you size a vector column or VSS index.\n\n**Output.** Columns: `model` (`VARCHAR` -- the name to pass to `embed`/`embedding_dim`) and `dim` (`INTEGER` -- the `FLOAT[]` length the model produces). One row per supported model.\n\n**Edge cases.** This is a discovery table function -- reference it in the query's table position, `embed.main.supported_models()`, rather than as a scalar. A parenthesis-free `supported_models` view exposes the same rows for plain browsing. Runnable, catalog-qualified examples are attached as example queries.",
+        "vgi.doc_md": "# supported_models()\n\nEvery `(model, dim)` the embed worker can produce, one per row.\n\n## Usage\n\nReference `supported_models()` in the table position to browse the registry, project just the `model` column to enumerate valid model names, or filter by `model` to read a single checkpoint's `dim`. Runnable, catalog-qualified examples are attached as example queries.\n\n## Columns\n\n- `model` (`VARCHAR`) -- pass to `embed(text, model)` / `embedding_dim(model)`.\n- `dim` (`INTEGER`) -- the `FLOAT[]` length the model produces.",
+        "vgi.example_queries": "[{\"description\": \"List the supported embedding models and their dimensions.\", \"sql\": \"SELECT model, dim FROM embed.main.supported_models() ORDER BY model\"}, {\"description\": \"Dimension of the default model.\", \"sql\": \"SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'\"}]",
+        "vgi.keywords": "[\"supported models\", \"list models\", \"available models\", \"model catalog\", \"discovery\", \"dimension\", \"embedding models\", \"bge\", \"what models\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"model\", \"type\": \"VARCHAR\", \"description\": \"Model name to pass to embed(text, model) or embedding_dim(model).\"}, {\"name\": \"dim\", \"type\": \"INTEGER\", \"description\": \"Embedding dimension (FLOAT[] length) the model produces.\"}]",
+        "vgi.title": "Supported Models Catalog"
+      },
+      null,
+      [],
+      [],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22604,
+      [
+        "SELECT model, dim FROM embed.main.supported_models() ORDER BY model",
+        "SELECT dim FROM embed.main.supported_models() WHERE model = 'BAAI/bge-small-en-v1.5'"
+      ],
+      null,
+      [
+        "embedding",
+        "metadata"
+      ]
+    ]
+  ]
+}

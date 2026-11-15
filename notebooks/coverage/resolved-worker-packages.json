@@ -1,0 +1,8 @@
+{
+  "vgi-embed": "0.5.0",
+  "vgi-python": "0.51.1",
+  "vgi-rpc": "0.53.1",
+  "fastembed": "0.9.1",
+  "onnxruntime": "1.32.0",
+  "huggingface-hub": "1.33.0"
+}

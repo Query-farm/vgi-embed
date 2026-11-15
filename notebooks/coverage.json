@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "catalogs": {
+    "released": {
+      "path": "coverage/catalog-released.json",
+      "sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "catalog_sha256": "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+        "notes": "Complete actual release inventory: nine function rows and supported_models VIEW alias, six logical names. No physical tables/COPY/auth/write. Full arity signatures and VIEW columns retained. Current source adds examples/agent metadata only; compute methods, registration, models and root dependencies unchanged. Reviewed current interface compatibility, no exact-current execution claim. Only the pinned BGE model is evaluated, not every advertised model."
+      }
+    },
+    "current": {
+      "path": "coverage/catalog-current.json",
+      "sha256": "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab",
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "catalog_sha256": "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab",
+        "notes": "Complete actual release inventory: nine function rows and supported_models VIEW alias, six logical names. No physical tables/COPY/auth/write. Full arity signatures and VIEW columns retained. Current source adds examples/agent metadata only; compute methods, registration, models and root dependencies unchanged. Reviewed current interface compatibility, no exact-current execution claim. Only the pinned BGE model is evaluated, not every advertised model."
+      }
+    }
+  },
+  "notebooks": [
+    {
+      "path": "01_audit_retrieval_depth.ipynb",
+      "sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+      "execution": {
+        "path": "coverage/run-01.json",
+        "sha256": "5cfa879724a7e0c7712dfebcd732bdbd00a4ef1c103c94ec21bff7d2b4a892ef"
+      }
+    },
+    {
+      "path": "02_similarity_is_a_review_signal.ipynb",
+      "sha256": "8f25dbfd73ec4d17ff8e905115456e1979b821fc01a2c6986b6ac5142bb2149a",
+      "execution": {
+        "path": "coverage/run-02.json",
+        "sha256": "a2eb64e467321381f75012916edeab5a14fa99dab8a5a53fa0d0bca71709be2c"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "object": {
+        "schema": "main",
+        "name": "supported_models"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "sql": [
+        {
+          "cell": "connection",
+          "reference": "embed.main.supported_models"
+        }
+      ],
+      "narrative_cells": [
+        "attach-story",
+        "vectors-story"
+      ],
+      "result_cells": [
+        "model-finding",
+        "availability-finding",
+        "checks-finding"
+      ],
+      "interpretation_cells": [
+        "model-finding",
+        "attach-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Select and identify one model before combining query and passage vectors.",
+        "finding": "Four advertised rows yield one exact BGE match. Selected model row gates vector production; model names and declared widths accompany vectors. Only pinned BGE-small runs; registry is metadata, not a four-model benchmark."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "embedding_dim"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "sql": [
+        {
+          "cell": "connection",
+          "reference": "embed.main.embedding_dim"
+        }
+      ],
+      "narrative_cells": [
+        "attach-story",
+        "vectors-story"
+      ],
+      "result_cells": [
+        "model-finding",
+        "availability-finding",
+        "checks-finding"
+      ],
+      "interpretation_cells": [
+        "model-finding",
+        "vectors-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Cross-check model width before interpreting vector comparisons.",
+        "finding": "Scalar advertises384, matching selected registry and actual returned query/passage lengths. Width checks reject mismatch while narrative states equal dimensions alone do not make models compatible."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "embed_query"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "sql": [
+        {
+          "cell": "vectors-query",
+          "reference": "embed.main.embed_query"
+        }
+      ],
+      "narrative_cells": [
+        "question",
+        "vectors-story",
+        "score-story"
+      ],
+      "result_cells": [
+        "availability-finding",
+        "ranking-chart",
+        "ranking-finding",
+        "tradeoff-chart"
+      ],
+      "interpretation_cells": [
+        "ranking-finding",
+        "vectors-story",
+        "experiment-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Encode two authored search questions using the model-specific retrieval instruction.",
+        "finding": "Both explicit-model query vectors have384 components, paired with same-model unprefixed passages. Sixteen exhaustive scores form stable rankings/curves; K changes selection only, not a performance or probability claim."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "embed_passage"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "sql": [
+        {
+          "cell": "vectors-query",
+          "reference": "embed.main.embed_passage"
+        }
+      ],
+      "narrative_cells": [
+        "question",
+        "inputs-story",
+        "vectors-story"
+      ],
+      "result_cells": [
+        "availability-finding",
+        "ranking-chart",
+        "ranking-finding"
+      ],
+      "interpretation_cells": [
+        "availability-finding",
+        "vectors-story",
+        "experiment-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Encode an authored collection once while preserving missing-text availability.",
+        "finding": "Eight substantive passages yield vectors and two NULL/blank controls remain unavailable. They are omitted from scored denominator rather than filled with zeros; full input audit remains visible."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "similarity"
+      },
+      "notebook": "01_audit_retrieval_depth.ipynb",
+      "sql": [
+        {
+          "cell": "score-query",
+          "reference": "embed.main.similarity"
+        }
+      ],
+      "narrative_cells": [
+        "score-story",
+        "curves-story",
+        "ranking-story"
+      ],
+      "result_cells": [
+        "ranking-chart",
+        "ranking-finding",
+        "tradeoff-chart",
+        "checks-finding"
+      ],
+      "interpretation_cells": [
+        "checks-finding",
+        "ranking-finding",
+        "tradeoff-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "7d3a60066352c741ee18010efc191995e6be0d4524e872284e7fbe72a581f2eb",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Audit exhaustive cosine ranking and authored precision/recall as result depth changes.",
+        "finding": "Worker cosine is independently reconstructed in DOUBLE SQL arithmetic from transported vectors, with symmetry/self checks and1e-6 tolerance. K2\u21924 changes selected IDs and precision while complete16scores and curves stay fixed within tolerance; labels are fully authored, not measured retrieval quality."
+      }
+    },
+    {
+      "object": {
+        "schema": "main",
+        "name": "embed"
+      },
+      "notebook": "02_similarity_is_a_review_signal.ipynb",
+      "sql": [
+        {
+          "cell": "inputs-query",
+          "reference": "embed.main.embed"
+        }
+      ],
+      "narrative_cells": [
+        "question",
+        "inputs-story",
+        "pairs-story",
+        "matrix-story"
+      ],
+      "result_cells": [
+        "matrix-chart",
+        "counts-chart",
+        "finding",
+        "checks-finding"
+      ],
+      "interpretation_cells": [
+        "finding",
+        "matrix-story",
+        "counts-story",
+        "experiment-story"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewer": "Codex /root/notebooks_earthquakes",
+        "reviewed_at": "2026-11-15T01:04:31.430585+00:00",
+        "notebook_sha256": "8f25dbfd73ec4d17ff8e905115456e1979b821fc01a2c6986b6ac5142bb2149a",
+        "catalog_sha256": [
+          "66e0c60c919f85275eb97ccdf8baf1c194cd81703383b77f6d9e4b7e6c191289",
+          "ca5c49d841ca70f520a755fc0cb2d8e330e402b37f813f4000053c20896eb0ab"
+        ],
+        "purpose": "Use symmetric title embeddings to propose review pairs without asserting equivalence.",
+        "finding": "Seven vectors plus one explicit NULL input yield21unordered comparisons. All titles and pair roles are authored. Exact-string, paraphrase, related-task and other categories remain separate; threshold0.85\u21920.70 expands review workload from the same scores. No clustering, merging or automatic deletion occurs. Undefined cosine controls remain NULL and orthogonal zero is valid."
+      }
+    }
+  ]
+}

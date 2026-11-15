@@ -1,0 +1,46 @@
+{
+  "query": "SELECT * FROM duckdb_databases() WHERE database_name='embed'",
+  "captured_at": "2026-11-15T00:55:05.693668+00:00",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "path",
+    "comment",
+    "tags",
+    "internal",
+    "type",
+    "readonly",
+    "encrypted",
+    "cipher",
+    "options"
+  ],
+  "rows": [
+    [
+      "embed",
+      22595,
+      null,
+      "Local text embeddings (fastembed/ONNX) + cosine similarity for semantic search / RAG.",
+      {
+        "vgi.agent_test_tasks": "[{\"name\": \"default_model_dimension\", \"prompt\": \"The default model is BAAI/bge-small-en-v1.5. Does it produce 384-dimensional embedding vectors? Return a single boolean.\"}, {\"name\": \"list_supported_models\", \"prompt\": \"List the names of every embedding model this worker supports.\"}, {\"name\": \"self_similarity_is_one\", \"prompt\": \"Confirm that a piece of text is maximally similar to itself: compute the cosine similarity of the embedding of the word 'database' with itself, rounded to 3 decimal places.\"}, {\"name\": \"related_more_similar_than_unrelated\", \"prompt\": \"Is the word 'dog' more semantically similar to 'puppy' than to 'airplane'? Return a single boolean.\"}, {\"name\": \"base_model_dimension\", \"prompt\": \"Does the model 'BAAI/bge-base-en-v1.5' produce 768-dimensional embedding vectors? Return a single boolean.\"}, {\"name\": \"retrieval_ranks_relevant_passage_higher\", \"prompt\": \"Using the retrieval embedding functions, is the search query 'how do I reset my password' more similar to the passage 'Reset your password from the account settings page.' than to the passage 'The weather today is sunny and warm.'? Return a single boolean.\"}]",
+        "vgi.author": "Query.Farm",
+        "vgi.copyright": "Copyright 2026 Query Farm LLC - https://query.farm",
+        "vgi.doc_llm": "Turn text into fixed-length `FLOAT[]` embedding vectors entirely in-process (fastembed/ONNX, no torch, no network call after a one-time model download) and compare them with cosine similarity. This is the offline, in-database building block for semantic search, retrieval-augmented generation (RAG), clustering, and near-duplicate detection: embed a corpus once, embed a query, and rank rows by vector similarity -- pairing naturally with the DuckDB VSS extension for indexed nearest-neighbor search. It covers both symmetric text-to-text embedding and the asymmetric query/passage convention that retrieval models expect, plus a pure-arithmetic similarity score. Reach for it whenever you want vectors and ranking inside SQL instead of standing up a separate embedding service. List this catalog's schema to discover the embedding, retrieval, similarity, and model-discovery functions it provides.",
+        "vgi.doc_md": "# Local Text Embeddings & Semantic Search in SQL\n\n![fastembed logo](https://qdrant.tech/images/logo_with_text.png)\n\n**Turn text into vector embeddings directly in DuckDB SQL** \u2014 generate fixed-length `FLOAT[]` embedding vectors and score them with cosine similarity for semantic search, retrieval-augmented generation (RAG), and nearest-neighbor ranking, all without leaving your query and without sending a single byte to an external API.\n\nThe **embed** extension brings sentence-transformer text embeddings to SQL for data engineers, RAG builders, and search teams who want vector search inside the database instead of a separate embedding service. Embeddings are computed **entirely in-process and offline** \u2014 there is no torch dependency, no GPU requirement, and no network call after the one-time model download \u2014 so the same query runs identically on a laptop, in CI, and in production.\n\nUnder the hood it is powered by [fastembed](https://github.com/qdrant/fastembed) from [Qdrant](https://qdrant.tech) (Apache-2.0), which runs quantized sentence-transformer models through [ONNX Runtime](https://onnxruntime.ai) ([source](https://github.com/microsoft/onnxruntime)). The configured default model is `BAAI/bge-small-en-v1.5` (384-dimensional), downloaded on first use and cached locally. Set `VGI_EMBED_DEFAULT_MODEL` before startup to change it, or pass a model as the second argument to each embedding function. Use the same model for queries and documents. Vectors are returned over Apache Arrow as native DuckDB `FLOAT[]` lists, ready to index and rank with the [DuckDB VSS extension](https://duckdb.org/docs/extensions/vss.html).\n\n## How it works\n\nThere are two embedding modes. *Symmetric* embedding maps any text to a vector for text-to-text comparison (dedup, clustering, classification). *Asymmetric* retrieval follows the query/passage convention these models are trained on: a short search query and a longer document are embedded with slightly different instruction prefixes so they land in the same space, which improves recall over plain symmetric embedding. Ranking is then just cosine similarity between vectors -- pure arithmetic, no model load. Model discovery and dimension lookups let you size a vector column or VSS index ahead of time.\n\n```sql\n-- A sentence is more similar to itself than to an unrelated one\nSELECT embed.similarity(embed.embed('cat'), embed.embed('kitten')) AS score;\n```\n\nNULL or empty input text yields a NULL vector, and the model is loaded once and amortized across every row in a scan.",
+        "vgi.keywords": "[\"embeddings\", \"embed\", \"text embedding\", \"vector\", \"fastembed\", \"onnx\", \"cosine similarity\", \"semantic search\", \"retrieval\", \"rag\", \"bge\", \"sentence transformer\", \"nearest neighbor\", \"vss\"]",
+        "vgi.license": "MIT",
+        "vgi.subtitle": "Turn text into embedding vectors on your own machine and rank it by cosine similarity for semantic search and RAG.",
+        "vgi.support_contact": "https://github.com/Query-farm/vgi-embed/issues",
+        "vgi.support_policy_url": "https://github.com/Query-farm/vgi-embed/blob/main/README.md",
+        "vgi.title": "Text Embeddings"
+      },
+      false,
+      "vgi",
+      false,
+      false,
+      null,
+      {
+        "location": "uvx --python 3.13 --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker"
+      }
+    ]
+  ]
+}

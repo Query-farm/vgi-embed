@@ -1,0 +1,30 @@
+{
+  "query": "DESCRIBE SELECT * FROM embed.main.supported_models()",
+  "captured_at": "2026-11-15T00:55:05.695815+00:00",
+  "columns": [
+    "column_name",
+    "column_type",
+    "null",
+    "key",
+    "default",
+    "extra"
+  ],
+  "rows": [
+    [
+      "model",
+      "VARCHAR",
+      "YES",
+      null,
+      null,
+      null
+    ],
+    [
+      "dim",
+      "INTEGER",
+      "YES",
+      null,
+      null,
+      null
+    ]
+  ]
+}

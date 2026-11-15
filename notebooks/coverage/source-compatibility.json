@@ -1,0 +1,69 @@
+{
+  "release": "v0.5.0",
+  "release_commit": "a0ad9a77a0aae6b55fb0f2d5ed3292473c6d6743",
+  "current_revision": "b77b166a8d437c144e39b55b5ad4f483f915f836",
+  "source_ci": {
+    "url": "https://github.com/Query-farm/vgi-embed/actions/runs/43567732728",
+    "revision": "b77b166a8d437c144e39b55b5ad4f483f915f836",
+    "conclusion": "success"
+  },
+  "runtime": "Haybarn2.0.0rc11",
+  "launch": "uvx --python 3.13 --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker",
+  "source_review": "Current scalars.py and worker.py only add composed example SQL and agent-task metadata; full source diff reviewed and retained. Compute methods, supported-model registry, catalog registration/signatures, entrypoint and root dependencies are unchanged. The actual release catalog supports reviewed current-interface coverage, not an exact-current runtime claim.",
+  "changed_paths": [
+    "CLAUDE.md",
+    "Makefile",
+    "README.md",
+    "test/sql/scalars.test",
+    "vgi-agent-tests.yaml",
+    "vgi_embed/scalars.py",
+    "vgi_embed/worker.py"
+  ],
+  "root_dependencies_unchanged": true,
+  "scope": "Six logical names: embed, embed_query, embed_passage, similarity, embedding_dim, supported_models. Three embedding functions have arity overloads; supported_models function and VIEW alias count once. No physical tables, COPY handlers, authenticated or write operations. Four advertised models are metadata, not proof of four working model runtimes; only pinned BGE-small-en-v1.5 runs.",
+  "metadata_provenance": "Actual catalog-metadata.json vgi.title/vgi.subtitle.",
+  "resolved_worker_packages": {
+    "vgi-embed": "0.5.0",
+    "vgi-python": "0.51.1",
+    "vgi-rpc": "0.53.1",
+    "fastembed": "0.9.1",
+    "onnxruntime": "1.32.0",
+    "huggingface-hub": "1.33.0"
+  },
+  "model_manifest": {
+    "model_name": "BAAI/bge-small-en-v1.5",
+    "repository": "Qdrant/bge-small-en-v1.5-onnx-Q",
+    "revision": "aa8f8b060edb00e03bfdd08813a2949946c8ba55",
+    "files": {
+      "config.json": {
+        "bytes": 706,
+        "sha256": "13582bcf2effc85b7bf3d3f5532e686bc1c9ce86bb009d10f0ec33cbe92299dd"
+      },
+      "model_optimized.onnx": {
+        "bytes": 66465124,
+        "sha256": "51f1bd0addd6e859e42c2c8021a5e5461385bb676a649f4b269aa445449f2431"
+      },
+      "ort_config.json": {
+        "bytes": 1272,
+        "sha256": "99881c45e073696289224931dd48694398bc6bcd1fe7cb7018bca1e0cc00e1fc"
+      },
+      "special_tokens_map.json": {
+        "bytes": 695,
+        "sha256": "5d5b662e421ea9fac075174bb0688ee0d9431699900b90662acd44b2a350503a"
+      },
+      "tokenizer.json": {
+        "bytes": 711396,
+        "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66"
+      },
+      "tokenizer_config.json": {
+        "bytes": 1242,
+        "sha256": "0b29c7bfc889e53b36d9dd3e686dd4300f6525110eaa98c76a5dafceb2029f53"
+      },
+      "vocab.txt": {
+        "bytes": 231508,
+        "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+      }
+    }
+  },
+  "model_first_use": "Fresh worktree downloaded seven files at immutable Qdrant revision before actual generic/query/passage vector probe; helper verified all bytes and hashes then configured offline loading. No fallback."
+}

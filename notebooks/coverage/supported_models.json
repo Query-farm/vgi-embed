@@ -1,0 +1,26 @@
+{
+  "query": "SELECT * FROM embed.main.supported_models() ORDER BY model",
+  "captured_at": "2026-11-15T00:55:05.707549+00:00",
+  "columns": [
+    "model",
+    "dim"
+  ],
+  "rows": [
+    [
+      "BAAI/bge-base-en-v1.5",
+      768
+    ],
+    [
+      "BAAI/bge-small-en",
+      384
+    ],
+    [
+      "BAAI/bge-small-en-v1.5",
+      384
+    ],
+    [
+      "sentence-transformers/all-MiniLM-L6-v2",
+      384
+    ]
+  ]
+}
