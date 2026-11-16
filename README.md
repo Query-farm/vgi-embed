@@ -19,7 +19,7 @@ and starts fast.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker');
+ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.1 vgi-embed-worker');
 
 -- A 384-dimensional vector.
 SELECT embed.embed('hello world');
@@ -46,7 +46,7 @@ The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.0 vgi-embed-worker');
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.1 vgi-embed-worker');
 
 -- Embed text into a FLOAT[] vector and check its length.
 SELECT len(embed.main.embed('hello world')) AS dim;
