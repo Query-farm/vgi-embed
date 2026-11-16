@@ -5,30 +5,29 @@
 #   make test-unit   # pytest only
 #   make test-sql    # SQL end-to-end only (runs the haybarn glob)
 #   make models      # warm the fastembed cache (download the default ONNX model)
-#
-# The SQL suite drives the worker as a real subprocess over stdio: haybarn-unittest
-# ATTACHes `${VGI_EMBED_WORKER}`, then runs the .test files in test/sql/.
-#
-# The default model (BAAI/bge-small-en-v1.5, MIT, 384-dim) is downloaded by
-# fastembed on first use and cached (gitignored). `make models` pre-warms it so
-# the first SQL/unit run isn't paying the download inline.
 
-# Worker stdio command (overridable). Drive the worker from the synced project
-# venv (`uv sync --extra http`) so the E2E suite runs against the same pinned
-# vgi-python the linter and tests use, rather than an ephemeral `uv run` env that
-# re-resolves the PEP-723 inline deps.
-WORKER_STDIO   ?= .venv/bin/python embed_worker.py
+# SQL tests: ci/run-integration.sh (adapted from the vgi-starter template) runs
+# test/sql/*.test through the published haybarn-unittest with the signed community
+# `vgi` extension, over stdio, launch (AF_UNIX, pooled) and http. CI runs the same
+# script per transport. `make test-sql TRANSPORTS=launch` runs one.
+HAYBARN_VERSION  ?= 2.0.0rc11
+WORKER           ?= $(CURDIR)/.venv/bin/vgi-embed-worker
+TOOLS            := $(CURDIR)/.tools
+HAYBARN_UNITTEST := $(TOOLS)/bin/haybarn-unittest
+TRANSPORTS       ?= stdio launch http
 
-# haybarn-unittest: the DuckDB sqllogictest runner
-#   uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'
-# haybarn 2.0 is required: its community `vgi` extension is the one that speaks the
-# worker's VGI protocol (vgi.v3 / 3.3). --keep-home lets the runner see the
-# extensions installed under the real $HOME (haybarn-unittest 2.0 isolates it).
-HAYBARN        ?= haybarn-unittest
-TEST_DIR        = .
-TEST_PATTERN    = test/sql/*
+.PHONY: build tools check test test-unit test-sql pytest models lint typecheck
 
-.PHONY: test test-unit test-sql pytest models lint typecheck
+build: ## Install the worker (with every extra) into .venv
+	uv sync --locked --all-extras
+
+tools: ## Install the pinned SQL test runner into .tools
+	@test -x $(HAYBARN_UNITTEST) || { uv venv -q $(TOOLS) && uv pip install -q -p $(TOOLS) haybarn-unittest==$(HAYBARN_VERSION); }
+
+test-sql: build tools ## SQL tests through DuckDB over each of $(TRANSPORTS)
+	@for t in $(TRANSPORTS); do \
+		WORKER="$(WORKER)" HAYBARN_UNITTEST="$(HAYBARN_UNITTEST)" TRANSPORT=$$t ci/run-integration.sh || exit 1; \
+	done
 
 test: test-unit test-sql
 
@@ -36,17 +35,6 @@ test-unit: pytest
 
 pytest:
 	uv run --no-sync pytest -q
-
-# End-to-end SQL: run the haybarn glob with the worker command exported.
-# The worker runs from the synced project venv (WORKER_STDIO above).
-test-sql:
-	@command -v $(HAYBARN) >/dev/null 2>&1 || { \
-		echo "ERROR: $(HAYBARN) not found. Install it with:" >&2; \
-		echo "  uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'" >&2; \
-		echo "  (then ensure ~/.local/bin is on PATH)" >&2; \
-		exit 1; \
-	}
-	VGI_EMBED_WORKER="$(WORKER_STDIO)" $(HAYBARN) --keep-home --test-dir "$(TEST_DIR)" "$(TEST_PATTERN)"
 
 # Pre-warm the fastembed cache by downloading the default ONNX model once.
 models:
@@ -57,3 +45,5 @@ lint:
 
 typecheck:
 	uv run --no-sync mypy vgi_embed/
+
+check: lint test ## Everything CI runs
