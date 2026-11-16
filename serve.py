@@ -1,5 +1,5 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.14"
 # dependencies = [
 #     "vgi-python[http,oauth]>=0.52.2,<0.53",
 #     "fastembed>=0.3",

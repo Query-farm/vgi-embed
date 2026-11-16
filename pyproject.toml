@@ -3,7 +3,7 @@ name = "vgi-embed"
 version = "0.5.1"
 description = "Local text embeddings (fastembed/ONNX) as VGI DuckDB SQL functions for semantic search / RAG"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 license = { file = "LICENSE" }
 authors = [{ name = "Query Farm LLC", email = "hello@query.farm" }]
 keywords = [
@@ -64,7 +64,7 @@ addopts = "-q"
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "D"]
@@ -91,7 +91,7 @@ skip_checking_raises = true
 allow_init_docstring = true
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
