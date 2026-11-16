@@ -1310,7 +1310,7 @@ wheels = [
 
 [[package]]
 name = "vgi-embed"
-version = "0.5.1"
+version = "0.5.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastembed" },
