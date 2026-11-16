@@ -3,4 +3,5 @@ target-version = "py313"
 [lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
 [lint.per-file-ignores]
-"*.ipynb" = ["E402", "F821"]
+# Prose strings run long; imports follow the bootstrap cell; SQL magic binds result names.
+"*.ipynb" = ["E402", "E501", "F821"]
