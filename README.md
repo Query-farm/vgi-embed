@@ -19,7 +19,7 @@ and starts fast.
 
 ```sql
 INSTALL vgi FROM community; LOAD vgi;
-ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.2 vgi-embed-worker');
+ATTACH 'embed' (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.6.0 vgi-embed-worker');
 
 -- A 384-dimensional vector.
 SELECT embed.embed('hello world');
@@ -38,6 +38,8 @@ LIMIT 5;
 SELECT * FROM embed.supported_models();
 ```
 
+vgi-embed 0.6.0 speaks VGI protocol 3.4, so it needs Haybarn 2.0.1 or newer (Haybarn 2.0.0 loads a 3.3 `vgi` extension that cannot attach it).
+
 ## Quick start
 
 The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from a tagged release on GitHub. `uvx` builds an isolated environment on the first ATTACH and reuses it afterwards:
@@ -46,7 +48,7 @@ The worker isn't on PyPI; [uv](https://docs.astral.sh/uv/) runs it straight from
 INSTALL vgi FROM community;
 LOAD vgi;
 
-ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.5.2 vgi-embed-worker');
+ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-embed@v0.6.0 vgi-embed-worker');
 
 -- Embed text into a FLOAT[] vector and check its length.
 SELECT len(embed.main.embed('hello world')) AS dim;
@@ -68,14 +70,14 @@ GROUP BY t.ticket ORDER BY t.ticket;
 
 The embedding model downloads on first use and is cached — see [The model](#the-model).
 
-Change `@v0.5.2` to move to a newer release.
+Change `@v0.6.0` to move to a newer release.
 
 ### Other ways to run it
 
 - **Docker** (the image bundles the worker and its dependencies):
 
   ```sql
-  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.5.2');
+  ATTACH 'embed' AS embed (TYPE vgi, LOCATION 'docker://ghcr.io/query-farm/vgi-embed:0.6.0');
   ```
 
 - **From a local checkout** (`git clone https://github.com/Query-farm/vgi-embed`), point `LOCATION` at `uv run --project /path/to/vgi-embed vgi-embed-worker`.
@@ -204,7 +206,7 @@ uv run --no-sync ruff check . && uv run --no-sync mypy vgi_embed/
 
 `make test-sql` exports `VGI_EMBED_WORKER=".venv/bin/python embed_worker.py"` (the synced project venv)
 and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"` (install once:
-`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is required for the worker's VGI protocol vgi.v3 / 3.3, then put `~/.local/bin` on `PATH`).
+`uv tool install --prerelease allow 'haybarn-unittest>=2.0.1rc3,<2.1'`; haybarn 2.0.1 is required for the worker's VGI protocol vgi.v3 / 3.4, then put `~/.local/bin` on `PATH`).
 
 ## License
 

@@ -7,4 +7,4 @@ semantic search / RAG with DuckDB VSS.
 
 from __future__ import annotations
 
-__version__ = "0.5.2"
+__version__ = "0.6.0"

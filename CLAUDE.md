@@ -81,7 +81,7 @@ uv run --no-sync ruff check . && uv run --no-sync mypy vgi_embed/
 
 `make test-sql` exports `VGI_EMBED_WORKER=".venv/bin/python embed_worker.py"` (the synced project venv)
 and runs `haybarn-unittest --keep-home --test-dir . "test/sql/*"` (install once:
-`uv tool install --prerelease allow 'haybarn-unittest>=2.0.0rc11,<2.1'`; haybarn 2.0 is required for the worker's VGI protocol vgi.v3 / 3.3). **The SQL suite is authoritative** — it
+`uv tool install --prerelease allow 'haybarn-unittest>=2.0.1rc3,<2.1'`; haybarn 2.0.1 is required for the worker's VGI protocol vgi.v3 / 3.4). **The SQL suite is authoritative** — it
 exercises the real RPC + model path. CI runs unit + lint plus a gated `e2e` job
 (installs worker deps from PyPI, warms the model, launches the worker from the
 prepared venv).

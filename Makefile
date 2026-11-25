@@ -10,7 +10,7 @@
 # test/sql/*.test through the published haybarn-unittest with the signed community
 # `vgi` extension, over stdio, launch (AF_UNIX, pooled) and http. CI runs the same
 # script per transport. `make test-sql TRANSPORTS=launch` runs one.
-HAYBARN_VERSION  ?= 2.0.0rc11
+HAYBARN_VERSION  ?= 2.0.1rc3
 WORKER           ?= $(CURDIR)/.venv/bin/vgi-embed-worker
 TOOLS            := $(CURDIR)/.tools
 HAYBARN_UNITTEST := $(TOOLS)/bin/haybarn-unittest

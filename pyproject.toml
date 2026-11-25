@@ -1,6 +1,6 @@
 [project]
 name = "vgi-embed"
-version = "0.5.2"
+version = "0.6.0"
 description = "Local text embeddings (fastembed/ONNX) as VGI DuckDB SQL functions for semantic search / RAG"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -28,16 +28,16 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "vgi-python[http]>=0.52.2,<0.53",
+    "vgi-python[http]>=0.55.2,<0.56",
     "fastembed>=0.3",
     "pyarrow",
 ]
 
 [project.optional-dependencies]
-http = ["vgi-python[http]>=0.52.2,<0.53"]
+http = ["vgi-python[http]>=0.55.2,<0.56"]
 # HTTP-serving extra — installed by the Docker image (`.[serve]`). Alias of the
 # `http` extra so the container and the CI integration job stay in lockstep.
-serve = ["vgi-python[http]>=0.52.2,<0.53"]
+serve = ["vgi-python[http,oauth]>=0.55.2,<0.56"]
 dev = [
     "pytest>=8",
     "ruff>=0.5",

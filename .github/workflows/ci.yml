@@ -64,7 +64,7 @@ jobs:
         transport: [stdio, launch, http]
     env:
       UV_PYTHON: "3.14"
-      HAYBARN_VERSION: "2.0.0rc11"
+      HAYBARN_VERSION: "2.0.1rc3"
       # Pin fastembed's model cache to a fixed path so the warm step, the worker
       # processes, and actions/cache all agree on where the ONNX model lives.
       FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.fastembed_cache
